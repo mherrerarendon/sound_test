@@ -38,6 +38,9 @@ import 'package:sound_test/api.dart';
 
 ///
 const int tSampleRate = 44000;
+const int tNumChannels = 1;
+const int tBitsPerSample = 16;
+const int tBitRate = tSampleRate * tNumChannels * tBitsPerSample;
 typedef _Fn = void Function();
 
 /// Example app.
@@ -119,8 +122,14 @@ class _RecordToStreamExampleState extends State<RecordToStreamExample> {
     await _mRecorder!.startRecorder(
       toStream: recordingDataController.sink,
       codec: Codec.pcm16,
-      numChannels: 1,
+      numChannels: tNumChannels,
+      bitRate: tBitRate,
       sampleRate: tSampleRate,
+      // await _mRecorder!.startRecorder(
+      //   toStream: recordingDataController.sink,
+      //   codec: Codec.pcm16,
+      //   numChannels: 1,
+      //   sampleRate: tSampleRate,
     );
     setState(() {});
   }
