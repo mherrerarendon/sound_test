@@ -114,8 +114,8 @@ class _RecordToStreamExampleState extends State<RecordToStreamExample> {
     _mRecordingDataSubscription =
         recordingDataController.stream.listen((buffer) async {
       if (buffer is FoodData) {
-        final rustVal = await _tuner.marco(i: 0);
-        debugPrint('${buffer.data?.length} bytes');
+        final rustVal = await _tuner.fft(byteBuffer: buffer.data!);
+        debugPrint('${rustVal} frequency');
         sink.add(buffer.data!);
       }
     });

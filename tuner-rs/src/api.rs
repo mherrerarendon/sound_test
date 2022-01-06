@@ -1,3 +1,4 @@
+use anyhow::anyhow;
 use rustfft::{num_complex::Complex, FftPlanner};
 
 pub fn marco(i: i32) -> anyhow::Result<i32> {
@@ -5,18 +6,34 @@ pub fn marco(i: i32) -> anyhow::Result<i32> {
 }
 
 pub fn fft(byte_buffer: Vec<u8>) -> anyhow::Result<i32> {
-    let buffer16: Vec<Complex<i32>> = byte_buffer
+    let mut buffer16: Vec<Complex<f32>> = byte_buffer
         .chunks_exact(2)
         .into_iter()
         .map(|a| i16::from_ne_bytes([a[0], a[1]]))
-        .enumerate()
-        .map(|(i, a)| Complex {
-            re: i as i32,
-            im: a as i32,
+        .map(|a| Complex {
+            re: a as f32,
+            im: 0.0f32,
         })
         .collect();
 
-    Ok(1)
+    let mut planner = FftPlanner::new();
+    let fft = planner.plan_fft_forward(buffer16.len());
+
+    fft.process(&mut buffer16);
+    let freq_domain: Vec<(usize, f32)> = buffer16
+        .iter()
+        .enumerate()
+        .map(|(i, a)| {
+            let sum = a.re.powf(2.0) + a.im.powf(2.0);
+            (i, (sum as f32).sqrt())
+        })
+        .collect();
+    let highest_freq_amp = freq_domain
+        .iter()
+        .reduce(|accum, item| if item.1 > accum.1 { item } else { accum })
+        .ok_or(anyhow!("fft failed"))?;
+    // / 44000.0;
+    Ok(highest_freq_amp.0 as i32)
 }
 
 #[cfg(test)]
