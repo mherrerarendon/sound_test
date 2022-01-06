@@ -58,6 +58,7 @@ class _RecordToStreamExampleState extends State<RecordToStreamExample> {
   String? _mPath;
   StreamSubscription? _mRecordingDataSubscription;
   final _tuner = TunerRs(DynamicLibrary.process());
+  int _pitch = 0;
 
   Future<void> _openRecorder() async {
     // var status = await Permission.microphone.request();
@@ -114,9 +115,13 @@ class _RecordToStreamExampleState extends State<RecordToStreamExample> {
     _mRecordingDataSubscription =
         recordingDataController.stream.listen((buffer) async {
       if (buffer is FoodData) {
-        final rustVal = await _tuner.fft(byteBuffer: buffer.data!);
-        debugPrint('${rustVal} frequency');
+        final oldPitch = _pitch;
+        _pitch = await _tuner.fft(byteBuffer: buffer.data!);
+        debugPrint('$_pitch frequency');
         sink.add(buffer.data!);
+        if (oldPitch != _pitch) {
+          setState(() {});
+        }
       }
     });
     await _mRecorder!.startRecorder(
@@ -125,11 +130,6 @@ class _RecordToStreamExampleState extends State<RecordToStreamExample> {
       numChannels: tNumChannels,
       bitRate: tBitRate,
       sampleRate: tSampleRate,
-      // await _mRecorder!.startRecorder(
-      //   toStream: recordingDataController.sink,
-      //   codec: Codec.pcm16,
-      //   numChannels: 1,
-      //   sampleRate: tSampleRate,
     );
     setState(() {});
   }
@@ -217,7 +217,7 @@ class _RecordToStreamExampleState extends State<RecordToStreamExample> {
                 width: 20,
               ),
               Text(_mRecorder!.isRecording
-                  ? 'Recording in progress'
+                  ? 'Pitch: $_pitch'
                   : 'Recorder is stopped'),
             ]),
           ),

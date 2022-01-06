@@ -6,9 +6,17 @@ pub fn marco(i: i32) -> anyhow::Result<i32> {
 }
 
 pub fn fft(byte_buffer: Vec<u8>) -> anyhow::Result<i32> {
+    let mut num_samples = 16384;
+    let num_samples_take = loop {
+        if num_samples > byte_buffer.len() / 2 {
+            num_samples /= 2;
+        } else {
+            break num_samples;
+        }
+    };
     let mut buffer16: Vec<Complex<f32>> = byte_buffer
         .chunks_exact(2)
-        .into_iter()
+        .take(num_samples_take)
         .map(|a| i16::from_ne_bytes([a[0], a[1]]))
         .map(|a| Complex {
             re: a as f32,
