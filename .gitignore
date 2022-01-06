@@ -44,3 +44,13 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Auto generated
+ios/Runner/api.h
+ios/Runner/libtuner_rs.a
+lib/api.dart
+tuner-rs/src/bridge_generated.rs
+
+# Rust related
+tuner-rs/target
+tuner-rs/Cargo.lock

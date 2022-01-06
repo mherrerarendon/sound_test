@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -13,6 +13,7 @@
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
+		F74DDDD42786ACC3003466D8 /* libtuner_rs.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F74DDDD32786ACC3003466D8 /* libtuner_rs.a */; };
 		FE1E7AFC36051C9B409F00FA /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8F6F27E81208A0986628111F /* Pods_Runner.framework */; };
 /* End PBXBuildFile section */
 
@@ -47,6 +48,7 @@
 		97C146FD1CF9000F007C117D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		97C147001CF9000F007C117D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F74DDDD32786ACC3003466D8 /* libtuner_rs.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtuner_rs.a; path = Runner/libtuner_rs.a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,6 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F74DDDD42786ACC3003466D8 /* libtuner_rs.a in Frameworks */,
 				FE1E7AFC36051C9B409F00FA /* Pods_Runner.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -113,13 +116,13 @@
 				5D34FE836A4F4727FBC66376 /* Pods-Runner.release.xcconfig */,
 				4A2783AAE7D0C4DFC3FE50E7 /* Pods-Runner.profile.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
 		E58045C0D9CE60AA405CE1C7 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				F74DDDD32786ACC3003466D8 /* libtuner_rs.a */,
 				8F6F27E81208A0986628111F /* Pods_Runner.framework */,
 			);
 			name = Frameworks;
@@ -363,6 +366,82 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Runner",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-l\"bz2\"",
+					"-l\"c++\"",
+					"-l\"iconv\"",
+					"-l\"z\"",
+					"-framework",
+					"\"AVFoundation\"",
+					"-framework",
+					"\"AudioToolbox\"",
+					"-framework",
+					"\"CoreMedia\"",
+					"-framework",
+					"\"MediaPlayer\"",
+					"-framework",
+					"\"VideoToolbox\"",
+					"-framework",
+					"\"flutter_sound\"",
+					"-framework",
+					"\"flutter_sound_core\"",
+					"-framework",
+					"\"lame\"",
+					"-framework",
+					"\"libavcodec\"",
+					"-framework",
+					"\"libavdevice\"",
+					"-framework",
+					"\"libavfilter\"",
+					"-framework",
+					"\"libavformat\"",
+					"-framework",
+					"\"libavutil\"",
+					"-framework",
+					"\"libilbc\"",
+					"-framework",
+					"\"libogg\"",
+					"-framework",
+					"\"libopencore-amrnb\"",
+					"-framework",
+					"\"libsndfile\"",
+					"-framework",
+					"\"libswresample\"",
+					"-framework",
+					"\"libswscale\"",
+					"-framework",
+					"\"libvorbis\"",
+					"-framework",
+					"\"libvorbisenc\"",
+					"-framework",
+					"\"libvorbisfile\"",
+					"-framework",
+					"\"mobileffmpeg\"",
+					"-framework",
+					"\"opus\"",
+					"-framework",
+					"\"path_provider_ios\"",
+					"-framework",
+					"\"shine\"",
+					"-framework",
+					"\"soxr\"",
+					"-framework",
+					"\"speex\"",
+					"-framework",
+					"\"twolame\"",
+					"-framework",
+					"\"vo-amrwbenc\"",
+					"-framework",
+					"\"wavpack\"",
+					"-force_load",
+					$PROJECT_DIR/Runner/libtuner_rs.a,
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.soundTest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
@@ -492,6 +571,82 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Runner",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-l\"bz2\"",
+					"-l\"c++\"",
+					"-l\"iconv\"",
+					"-l\"z\"",
+					"-framework",
+					"\"AVFoundation\"",
+					"-framework",
+					"\"AudioToolbox\"",
+					"-framework",
+					"\"CoreMedia\"",
+					"-framework",
+					"\"MediaPlayer\"",
+					"-framework",
+					"\"VideoToolbox\"",
+					"-framework",
+					"\"flutter_sound\"",
+					"-framework",
+					"\"flutter_sound_core\"",
+					"-framework",
+					"\"lame\"",
+					"-framework",
+					"\"libavcodec\"",
+					"-framework",
+					"\"libavdevice\"",
+					"-framework",
+					"\"libavfilter\"",
+					"-framework",
+					"\"libavformat\"",
+					"-framework",
+					"\"libavutil\"",
+					"-framework",
+					"\"libilbc\"",
+					"-framework",
+					"\"libogg\"",
+					"-framework",
+					"\"libopencore-amrnb\"",
+					"-framework",
+					"\"libsndfile\"",
+					"-framework",
+					"\"libswresample\"",
+					"-framework",
+					"\"libswscale\"",
+					"-framework",
+					"\"libvorbis\"",
+					"-framework",
+					"\"libvorbisenc\"",
+					"-framework",
+					"\"libvorbisfile\"",
+					"-framework",
+					"\"mobileffmpeg\"",
+					"-framework",
+					"\"opus\"",
+					"-framework",
+					"\"path_provider_ios\"",
+					"-framework",
+					"\"shine\"",
+					"-framework",
+					"\"soxr\"",
+					"-framework",
+					"\"speex\"",
+					"-framework",
+					"\"twolame\"",
+					"-framework",
+					"\"vo-amrwbenc\"",
+					"-framework",
+					"\"wavpack\"",
+					"-force_load",
+					$PROJECT_DIR/Runner/libtuner_rs.a,
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.soundTest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
@@ -514,6 +669,82 @@
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Runner",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-l\"bz2\"",
+					"-l\"c++\"",
+					"-l\"iconv\"",
+					"-l\"z\"",
+					"-framework",
+					"\"AVFoundation\"",
+					"-framework",
+					"\"AudioToolbox\"",
+					"-framework",
+					"\"CoreMedia\"",
+					"-framework",
+					"\"MediaPlayer\"",
+					"-framework",
+					"\"VideoToolbox\"",
+					"-framework",
+					"\"flutter_sound\"",
+					"-framework",
+					"\"flutter_sound_core\"",
+					"-framework",
+					"\"lame\"",
+					"-framework",
+					"\"libavcodec\"",
+					"-framework",
+					"\"libavdevice\"",
+					"-framework",
+					"\"libavfilter\"",
+					"-framework",
+					"\"libavformat\"",
+					"-framework",
+					"\"libavutil\"",
+					"-framework",
+					"\"libilbc\"",
+					"-framework",
+					"\"libogg\"",
+					"-framework",
+					"\"libopencore-amrnb\"",
+					"-framework",
+					"\"libsndfile\"",
+					"-framework",
+					"\"libswresample\"",
+					"-framework",
+					"\"libswscale\"",
+					"-framework",
+					"\"libvorbis\"",
+					"-framework",
+					"\"libvorbisenc\"",
+					"-framework",
+					"\"libvorbisfile\"",
+					"-framework",
+					"\"mobileffmpeg\"",
+					"-framework",
+					"\"opus\"",
+					"-framework",
+					"\"path_provider_ios\"",
+					"-framework",
+					"\"shine\"",
+					"-framework",
+					"\"soxr\"",
+					"-framework",
+					"\"speex\"",
+					"-framework",
+					"\"twolame\"",
+					"-framework",
+					"\"vo-amrwbenc\"",
+					"-framework",
+					"\"wavpack\"",
+					"-force_load",
+					$PROJECT_DIR/Runner/libtuner_rs.a,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.soundTest;
 				PRODUCT_NAME = "$(TARGET_NAME)";

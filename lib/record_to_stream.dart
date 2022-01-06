@@ -18,10 +18,12 @@
  */
 
 import 'dart:async';
+import 'dart:ffi';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:sound_test/api.dart';
 // import 'package:permission_handler/permission_handler.dart';
 
 /*
@@ -52,6 +54,7 @@ class _RecordToStreamExampleState extends State<RecordToStreamExample> {
   bool _mplaybackReady = false;
   String? _mPath;
   StreamSubscription? _mRecordingDataSubscription;
+  final _tuner = TunerRs(DynamicLibrary.process());
 
   Future<void> _openRecorder() async {
     // var status = await Permission.microphone.request();
@@ -106,8 +109,10 @@ class _RecordToStreamExampleState extends State<RecordToStreamExample> {
     var sink = await createFile();
     var recordingDataController = StreamController<Food>();
     _mRecordingDataSubscription =
-        recordingDataController.stream.listen((buffer) {
+        recordingDataController.stream.listen((buffer) async {
       if (buffer is FoodData) {
+        final rustVal = await _tuner.marco(i: 0);
+        debugPrint('${buffer.data?.length} bytes');
         sink.add(buffer.data!);
       }
     });
