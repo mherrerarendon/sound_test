@@ -14,6 +14,8 @@ pub fn fft(byte_buffer: Vec<u8>) -> anyhow::Result<i32> {
             break num_samples;
         }
     };
+    let sample_rate = 44000.0f32;
+    let ratio = sample_rate / num_samples_take as f32;
     let mut buffer16: Vec<Complex<f32>> = byte_buffer
         .chunks_exact(2)
         .take(num_samples_take)
@@ -40,8 +42,8 @@ pub fn fft(byte_buffer: Vec<u8>) -> anyhow::Result<i32> {
         .iter()
         .reduce(|accum, item| if item.1 > accum.1 { item } else { accum })
         .ok_or(anyhow!("fft failed"))?;
-    // / 44000.0;
-    Ok(highest_freq_amp.0 as i32)
+
+    Ok((highest_freq_amp.0 as f32 * ratio).round() as i32)
 }
 
 #[cfg(test)]
