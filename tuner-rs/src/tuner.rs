@@ -67,7 +67,7 @@ impl Tuner {
 
         Ok(FftPeak {
             freq: (highest_freq_amp.0 as f32 * self.ratio()),
-            intensity: highest_freq_amp.1,
+            intensity: highest_freq_amp.1 / 1000.0,
         })
     }
 }
