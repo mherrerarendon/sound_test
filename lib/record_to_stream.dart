@@ -58,7 +58,7 @@ class _RecordToStreamExampleState extends State<RecordToStreamExample> {
   String? _mPath;
   StreamSubscription? _mRecordingDataSubscription;
   final _tuner = TunerRs(DynamicLibrary.process());
-  int _pitch = 0;
+  FftPeak _peak = FftPeak(freq: 0, intensity: 0);
 
   Future<void> _openRecorder() async {
     // var status = await Permission.microphone.request();
@@ -115,13 +115,13 @@ class _RecordToStreamExampleState extends State<RecordToStreamExample> {
     _mRecordingDataSubscription =
         recordingDataController.stream.listen((buffer) async {
       if (buffer is FoodData) {
-        final oldPitch = _pitch;
-        _pitch = await _tuner.fft(byteBuffer: buffer.data!);
-        debugPrint('$_pitch frequency');
-        sink.add(buffer.data!);
-        if (oldPitch != _pitch) {
+        final newPeak = await _tuner.fft(byteBuffer: buffer.data!);
+        if (newPeak.intensity > 10000000) {
+          _peak = newPeak;
           setState(() {});
         }
+        debugPrint('$_peak frequency');
+        sink.add(buffer.data!);
       }
     });
     await _mRecorder!.startRecorder(
@@ -217,7 +217,7 @@ class _RecordToStreamExampleState extends State<RecordToStreamExample> {
                 width: 20,
               ),
               Text(_mRecorder!.isRecording
-                  ? 'Pitch: $_pitch'
+                  ? 'I: ${(_peak.intensity).toStringAsFixed(2)}, F: ${(_peak.freq).toStringAsFixed(2)}, '
                   : 'Recorder is stopped'),
             ]),
           ),

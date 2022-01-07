@@ -1,4 +1,4 @@
-use crate::{FftPeak, TunerError};
+use crate::{api::FftPeak, TunerError};
 use rustfft::{num_complex::Complex, FftPlanner};
 
 const SAMPLE_RATE: f32 = 44000.0;
@@ -76,9 +76,8 @@ impl Tuner {
 mod tests {
     use super::*;
 
-    use float_cmp::{approx_eq, ApproxEq};
+    use float_cmp::ApproxEq;
     use serde::Deserialize;
-    use serde_json::{Result, Value};
 
     #[derive(Deserialize)]
     struct SampleData {
