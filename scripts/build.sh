@@ -15,3 +15,4 @@ if [ $? -ne 0 ]; then
     echo "copy step failed"
     exit 1
 fi
+echo "All done!"
