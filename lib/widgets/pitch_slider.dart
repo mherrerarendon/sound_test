@@ -30,117 +30,131 @@ class PitchSlider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fftPeakModel = Provider.of<FftPeakModel>(context);
-    scrollTo() {
-      debugPrint('fftPeakModel.freq: ${fftPeakModel.freq}');
-      final stepsFromA4 = fftPeakModel.stepsFromA4;
-      debugPrint('stepsFromA4: $stepsFromA4');
-      if (stepsFromA4 >= 0) {
-        final offset = kA4ScrollOffset + stepsFromA4 * kCellWidth;
-        _scrollController.animateTo(offset,
-            duration: Duration(milliseconds: 50), curve: Curves.linear);
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+      final fftPeakModel = Provider.of<FftPeakModel>(context);
+      scrollTo() {
+        debugPrint('fftPeakModel.freq: ${fftPeakModel.freq}');
+        final stepsFromA4 = fftPeakModel.stepsFromA4;
+        debugPrint('stepsFromA4: $stepsFromA4');
+        if (stepsFromA4 + kA4Index >= 0) {
+          final offset = kA4ScrollOffset +
+              stepsFromA4 * kCellWidth -
+              (constraints.maxWidth / 2) +
+              (kCellWidth / 2);
+          _scrollController.animateTo(offset,
+              duration: const Duration(milliseconds: 50), curve: Curves.linear);
+        }
       }
-      // _scrollController.animateTo(fftPeakModel.freq * kCellWidth,
-      //     duration: Duration(milliseconds: 50), curve: Curves.linear);
-    }
 
-    WidgetsBinding.instance?.addPostFrameCallback((_) => scrollTo());
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        Container(
-          // width: screenMaxWidth + 40,
-          // padding: EdgeInsets.only(left: 20.0, right: 2.0),
-          height: kCellHeight,
-          child: Center(
-            child: MediaQuery.removePadding(
-              context: context,
-              removeBottom: true,
-              removeLeft: true,
-              removeRight: true,
-              child: ListView.builder(
-                  itemCount: kNumCells,
-                  controller: _scrollController,
-                  physics: NeverScrollableScrollPhysics(),
-                  scrollDirection: Axis.horizontal,
-                  itemBuilder: (context1, index) {
-                    // return scale steps
-                    return index == kNumCells
-                        ? const SizedBox()
-                        : Container(
-                            width: kCellWidth,
-                            alignment: Alignment.bottomLeft,
-                            child: SizedBox(
-                              child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: Container(
-                                  height: 10.0,
-                                  width: 2,
-                                  color: Colors.black,
+      WidgetsBinding.instance?.addPostFrameCallback((_) => scrollTo());
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Container(
+              child: SizedBox(
+            child: Align(
+              alignment: Alignment.center,
+              child: Container(
+                height: 10.0,
+                width: 10,
+                color: Colors.black,
+              ),
+            ),
+          )),
+          Container(
+            // width: screenMaxWidth + 40,
+            // padding: EdgeInsets.only(left: 20.0, right: 2.0),
+            height: kCellHeight,
+            child: Center(
+              child: MediaQuery.removePadding(
+                context: context,
+                removeBottom: true,
+                removeLeft: true,
+                removeRight: true,
+                child: ListView.builder(
+                    itemCount: kNumCells,
+                    controller: _scrollController,
+                    physics: NeverScrollableScrollPhysics(),
+                    scrollDirection: Axis.horizontal,
+                    itemBuilder: (context1, index) {
+                      // return scale steps
+                      return index == kNumCells
+                          ? const SizedBox()
+                          : Container(
+                              width: kCellWidth,
+                              alignment: Alignment.bottomLeft,
+                              child: SizedBox(
+                                child: Align(
+                                  alignment: Alignment.center,
+                                  child: Container(
+                                    height: 10.0,
+                                    width: 2,
+                                    color: Colors.black,
+                                  ),
                                 ),
                               ),
-                            ),
-                          );
-                  }),
+                            );
+                    }),
+              ),
             ),
           ),
-        ),
-        Container(
-          height: kCellHeight,
-          child: Center(
-            child: MediaQuery.removePadding(
-              context: context,
-              removeBottom: true,
-              removeLeft: true,
-              removeRight: true,
-              child: ListView.builder(
-                  itemCount: kNumCells,
-                  controller: _scrollController,
-                  physics: NeverScrollableScrollPhysics(),
-                  scrollDirection: Axis.horizontal,
-                  itemBuilder: (context1, index) {
-                    final octave = ((index + 10) ~/ 12)
-                        .toString(); // plus 10 because we are starting at A0
-                    final noteName = kNotes[index % 12];
-                    final scaleText = '$noteName$octave';
+          Container(
+            height: kCellHeight,
+            child: Center(
+              child: MediaQuery.removePadding(
+                context: context,
+                removeBottom: true,
+                removeLeft: true,
+                removeRight: true,
+                child: ListView.builder(
+                    itemCount: kNumCells,
+                    controller: _scrollController,
+                    physics: NeverScrollableScrollPhysics(),
+                    scrollDirection: Axis.horizontal,
+                    itemBuilder: (context1, index) {
+                      final octave = ((index + 10) ~/ 12)
+                          .toString(); // plus 10 because we are starting at A0
+                      final noteName = kNotes[index % 12];
+                      final scaleText = '$noteName$octave';
 
-                    // find text padding to align text in center
-                    // double? textPadding = 5.0;
-                    // }
+                      // find text padding to align text in center
+                      double? textPadding = -5.0;
 
-                    return index == kNumCells
-                        ? const SizedBox()
-                        : Container(
-                            width: kCellWidth,
-                            // padding: EdgeInsets.only(left: textPadding),
-                            alignment: Alignment.bottomLeft,
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                //mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      scaleText,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        letterSpacing: 1.0,
+                      return index == kNumCells
+                          ? const SizedBox()
+                          : Container(
+                              width: kCellWidth,
+                              // padding: EdgeInsets.only(left: textPadding),
+                              alignment: Alignment.bottomLeft,
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  //mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Align(
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        scaleText,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          letterSpacing: 1.0,
+                                        ),
                                       ),
-                                    ),
-                                  )
-                                ],
+                                    )
+                                  ],
+                                ),
                               ),
-                            ),
-                          );
-                  }),
+                            );
+                    }),
+              ),
             ),
           ),
-        ),
-      ],
-    );
+        ],
+      );
+    });
   }
 }
