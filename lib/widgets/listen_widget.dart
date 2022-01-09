@@ -4,22 +4,21 @@ import 'package:flutter_sound/flutter_sound.dart';
 import 'package:sound_test/api.dart';
 import 'package:flutter/material.dart';
 import 'package:sound_test/models/fft_peak.dart';
+import 'package:provider/provider.dart';
 
 const int tSampleRate = 44000;
 const int tNumChannels = 1;
 const int tBitsPerSample = 16;
 const int tBitRate = tSampleRate * tNumChannels * tBitsPerSample;
 const double tMinIntensity = 8000.0;
-const double tMaxFrequency = 20000.0;
-const double tMinFrequency = 0.0;
+const double tMaxFrequency = 4186.0;
+const double tMinFrequency = 27.5;
 typedef _Fn = void Function();
 
 class ListenWidget extends StatefulWidget {
-  const ListenWidget(
-    this.peakModel, {
+  const ListenWidget({
     Key? key,
   }) : super(key: key);
-  final FftPeakModel peakModel;
 
   @override
   _ListenWidgetState createState() => _ListenWidgetState();
@@ -65,11 +64,12 @@ class _ListenWidgetState extends State<ListenWidget> {
         recordingDataController.stream.listen((buffer) async {
       if (buffer is FoodData) {
         final newPeak = await _tuner.fft(byteBuffer: buffer.data!);
-        debugPrint('Intensity: ${newPeak.intensity}');
+        // debugPrint('Intensity: ${newPeak.intensity}');
         if (newPeak.intensity > tMinIntensity &&
             newPeak.freq > tMinFrequency &&
             newPeak.freq < tMaxFrequency) {
-          widget.peakModel.setNewPeak(newPeak.freq, newPeak.intensity);
+          Provider.of<FftPeakModel>(context, listen: false)
+              .setNewPeak(newPeak.freq, newPeak.intensity);
         }
       }
     });

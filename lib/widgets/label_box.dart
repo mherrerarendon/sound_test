@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class LabelBox extends StatelessWidget {
   final String label;
   final String value;
-  const LabelBox(this.label, this.value);
+  const LabelBox(this.label, this.value, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

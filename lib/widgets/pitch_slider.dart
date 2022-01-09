@@ -1,25 +1,58 @@
 import 'package:flutter/material.dart';
+import 'package:sound_test/models/fft_peak.dart';
+import 'package:provider/provider.dart';
 
-class PitchSlider extends StatefulWidget {
-  const PitchSlider({Key? key}) : super(key: key);
+// conreq = 4000;
+const kCellWidth = 80.0;
+const kCellHeight = 20.0;
+const kNumCells = 12 * 8 + 2; // Notes in regular piano
 
-  @override
-  _PitchSliderState createState() => _PitchSliderState();
-}
+const kNotes = [
+  'A',
+  'A#',
+  'B',
+  'C',
+  'C#',
+  'D',
+  'D#',
+  'E',
+  'F',
+  'F#',
+  'G',
+  'G#',
+];
+const kA4Index = 12 * 4;
+const kA4ScrollOffset = kA4Index * kCellWidth;
 
-class _PitchSliderState extends State<PitchSlider> {
-  ScrollController scrollController = ScrollController();
+class PitchSlider extends StatelessWidget {
+  PitchSlider({Key? key}) : super(key: key);
+  final ScrollController _scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
+    final fftPeakModel = Provider.of<FftPeakModel>(context);
+    scrollTo() {
+      debugPrint('fftPeakModel.freq: ${fftPeakModel.freq}');
+      final stepsFromA4 = fftPeakModel.stepsFromA4;
+      debugPrint('stepsFromA4: $stepsFromA4');
+      if (stepsFromA4 >= 0) {
+        final offset = kA4ScrollOffset + stepsFromA4 * kCellWidth;
+        _scrollController.animateTo(offset,
+            duration: Duration(milliseconds: 50), curve: Curves.linear);
+      }
+      // _scrollController.animateTo(fftPeakModel.freq * kCellWidth,
+      //     duration: Duration(milliseconds: 50), curve: Curves.linear);
+    }
+
+    WidgetsBinding.instance?.addPostFrameCallback((_) => scrollTo());
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Container(
           // width: screenMaxWidth + 40,
-          padding: EdgeInsets.only(left: 20.0, right: 2.0),
-          height: 15,
+          // padding: EdgeInsets.only(left: 20.0, right: 2.0),
+          height: kCellHeight,
           child: Center(
             child: MediaQuery.removePadding(
               context: context,
@@ -27,16 +60,16 @@ class _PitchSliderState extends State<PitchSlider> {
               removeLeft: true,
               removeRight: true,
               child: ListView.builder(
-                  itemCount: 50,
-                  controller: scrollController,
+                  itemCount: kNumCells,
+                  controller: _scrollController,
                   physics: NeverScrollableScrollPhysics(),
                   scrollDirection: Axis.horizontal,
                   itemBuilder: (context1, index) {
                     // return scale steps
-                    return index == 50
-                        ? SizedBox()
+                    return index == kNumCells
+                        ? const SizedBox()
                         : Container(
-                            width: 15,
+                            width: kCellWidth,
                             alignment: Alignment.bottomLeft,
                             child: SizedBox(
                               child: Align(
@@ -44,9 +77,7 @@ class _PitchSliderState extends State<PitchSlider> {
                                 child: Container(
                                   height: 10.0,
                                   width: 2,
-                                  // color: (index % scaleStepLimit!) == 0
-                                  //     ? widget.stepIndicatorColor
-                                  //     : widget.stepIndicatorDividerColor,
+                                  color: Colors.black,
                                 ),
                               ),
                             ),
@@ -56,9 +87,7 @@ class _PitchSliderState extends State<PitchSlider> {
           ),
         ),
         Container(
-          // width: screenMaxWidth + 40,
-          padding: EdgeInsets.only(left: 20.0, right: 2.0),
-          height: 15,
+          height: kCellHeight,
           child: Center(
             child: MediaQuery.removePadding(
               context: context,
@@ -66,24 +95,25 @@ class _PitchSliderState extends State<PitchSlider> {
               removeLeft: true,
               removeRight: true,
               child: ListView.builder(
-                  itemCount: 50,
-                  controller: scrollController,
+                  itemCount: kNumCells,
+                  controller: _scrollController,
                   physics: NeverScrollableScrollPhysics(),
                   scrollDirection: Axis.horizontal,
                   itemBuilder: (context1, index) {
-                    String scaleText;
-                    //return scale text for cms or feet
-                    scaleText = index.toString();
+                    final octave = ((index + 10) ~/ 12)
+                        .toString(); // plus 10 because we are starting at A0
+                    final noteName = kNotes[index % 12];
+                    final scaleText = '$noteName$octave';
 
                     // find text padding to align text in center
-                    double? textPadding = 5.0;
+                    // double? textPadding = 5.0;
                     // }
 
-                    return index == 50
-                        ? SizedBox()
+                    return index == kNumCells
+                        ? const SizedBox()
                         : Container(
-                            width: 15,
-                            padding: EdgeInsets.only(left: textPadding),
+                            width: kCellWidth,
+                            // padding: EdgeInsets.only(left: textPadding),
                             alignment: Alignment.bottomLeft,
                             child: Align(
                               alignment: Alignment.centerLeft,
@@ -97,7 +127,7 @@ class _PitchSliderState extends State<PitchSlider> {
                                     child: Text(
                                       scaleText,
                                       overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         letterSpacing: 1.0,
                                       ),
                                     ),
