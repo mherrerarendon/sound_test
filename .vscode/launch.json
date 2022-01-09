@@ -10,10 +10,10 @@
             "type": "dart"
         },
         {
-            "name": "sound_test (profile mode)",
+            "name": "sound_test (release mode)",
             "request": "launch",
             "type": "dart",
-            "flutterMode": "profile"
+            "flutterMode": "release"
         }
     ]
 }

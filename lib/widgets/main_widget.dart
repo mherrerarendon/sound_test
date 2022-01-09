@@ -22,6 +22,7 @@ class _MainWidgetState extends State<MainWidget> {
       return Column(
         children: [
           const ListenWidget(),
+          PitchSlider(),
           Consumer<FftPeakModel>(builder: (context, fftPeakModel, _) {
             return LabelBox('Frequency', fftPeakModel.freq.toStringAsFixed(2));
           }),
@@ -29,7 +30,6 @@ class _MainWidgetState extends State<MainWidget> {
             return LabelBox(
                 'Intensity', fftPeakModel.intensity.toStringAsFixed(2));
           }),
-          PitchSlider(),
         ],
       );
     }
