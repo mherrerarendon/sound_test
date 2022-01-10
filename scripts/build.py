@@ -13,7 +13,6 @@ def bridge_codegen():
     c_output = os.path.join(root_dir, 'ios', 'Runner', 'api.h')
     cmd = ['flutter_rust_bridge_codegen', '--rust-input', rust_input,
            '--dart-output', dart_output, '--c-output', c_output]
-    # print(' '.join(cmd))
     result = subprocess.run(cmd)
     return result.returncode
 
@@ -46,16 +45,16 @@ def copy_artifacts(release):
 if __name__ == '__main__':
     cli = argparse.ArgumentParser(
         description='Build script for sound test')
-    cli.add_argument('-r', '--release', action='store_true',
+    cli.add_argument('-d', '--debug', action='store_true',
                      help='Set to build as release')
     args = cli.parse_args()
 
     if bridge_codegen() != 0:
         print('Failed to generate bridge code')
         exit(1)
-    if build_rust(args.release) != 0:
+    if build_rust(not args.debug) != 0:
         print('Failed to build rust')
         exit(1)
 
-    copy_artifacts(args.release)
+    copy_artifacts(not args.debug)
     print('Build complete')

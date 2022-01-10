@@ -1,7 +1,100 @@
-use crate::{api::FftPeak, TunerError};
+use crate::{api::FftComponent, TunerError};
 use rustfft::{num_complex::Complex, FftPlanner};
 
 const SAMPLE_RATE: f32 = 44000.0;
+
+pub struct Harmonics {
+    components: Vec<FftComponent>,
+}
+
+impl Harmonics {
+    pub fn new(max_components: usize, absolute_values: &[(usize, f32)]) -> Self {
+        Self {
+            components: Self::calc_harmonic_components(max_components, absolute_values),
+        }
+    }
+
+    pub fn components(&self) -> &[FftComponent] {
+        &self.components
+    }
+
+    fn highest_intensity_components(
+        num: usize,
+        absolute_values: &[(usize, f32)],
+    ) -> Vec<FftComponent> {
+        let mut highest_intensity_components: Vec<FftComponent> =
+            vec![FftComponent::default(); num];
+        absolute_values.iter().for_each(|a| {
+            Self::add_component_if_high_intensity(a, &mut highest_intensity_components);
+        });
+        let ratio = SAMPLE_RATE / absolute_values.len() as f32;
+        highest_intensity_components
+            .iter()
+            .map(|component| FftComponent {
+                freq: (component.freq as f32 * ratio),
+                intensity: component.intensity / 1000.0,
+            })
+            .collect()
+    }
+
+    fn calc_harmonic_components(num: usize, absolute_values: &[(usize, f32)]) -> Vec<FftComponent> {
+        let highest_intensity_components = Self::highest_intensity_components(num, absolute_values);
+        let highest_intensity_component = highest_intensity_components
+            .iter()
+            .reduce(|accum, item| {
+                if item.intensity > accum.intensity {
+                    item
+                } else {
+                    accum
+                }
+            })
+            .unwrap();
+        let mut harmonics: Vec<FftComponent> = highest_intensity_components
+            .iter()
+            .filter(|component| Self::harmonic(component, highest_intensity_component).is_some())
+            .map(|component| component.clone())
+            .collect();
+        harmonics.sort_by_key(|component| component.freq.round() as usize);
+        harmonics
+    }
+
+    fn harmonic(component: &FftComponent, harmonic: &FftComponent) -> Option<usize> {
+        if (harmonic.freq.round() as usize) % (component.freq.round() as usize) == 0 {
+            Some(harmonic.freq.round() as usize / component.freq.round() as usize)
+        } else {
+            None
+        }
+    }
+
+    fn add_component_if_high_intensity(
+        component: &(usize, f32),
+        highest_intensity_components: &mut Vec<FftComponent>,
+    ) {
+        let least_intense_idx = Self::get_index_of_lowest_intensity(&highest_intensity_components);
+        let least_intense_component = &highest_intensity_components[least_intense_idx];
+        if component.1 > least_intense_component.intensity {
+            highest_intensity_components[least_intense_idx] = FftComponent {
+                freq: component.0 as f32,
+                intensity: component.1,
+            };
+        }
+    }
+
+    fn get_index_of_lowest_intensity(values: &[FftComponent]) -> usize {
+        values
+            .into_iter()
+            .enumerate()
+            .reduce(|accum, item| {
+                if item.1.intensity < accum.1.intensity {
+                    item
+                } else {
+                    accum
+                }
+            })
+            .unwrap()
+            .0
+    }
+}
 
 pub struct Tuner {
     fft_planner: FftPlanner<f32>,
@@ -30,11 +123,7 @@ impl Tuner {
         }
     }
 
-    fn ratio(&self) -> f32 {
-        SAMPLE_RATE / self.optimized_num_samples as f32
-    }
-
-    pub fn fft(&mut self, byte_buffer: Vec<u8>) -> Result<FftPeak, TunerError> {
+    pub fn fft(&mut self, byte_buffer: Vec<u8>) -> Result<FftComponent, TunerError> {
         if self.optimized_num_samples > byte_buffer.len() / 2 {
             return Err(TunerError::FftFailed);
         }
@@ -60,15 +149,9 @@ impl Tuner {
                 (i, (sum as f32).sqrt())
             })
             .collect();
-        let highest_freq_amp = absolute_values
-            .iter()
-            .reduce(|accum, item| if item.1 > accum.1 { item } else { accum })
-            .ok_or(TunerError::FftFailed)?;
+        let harmonics = Harmonics::new(5, &absolute_values);
 
-        Ok(FftPeak {
-            freq: (highest_freq_amp.0 as f32 * self.ratio()),
-            intensity: highest_freq_amp.1 / 1000.0,
-        })
+        Ok(harmonics.components()[0].clone())
     }
 }
 

@@ -31,10 +31,6 @@ class _ListenWidgetState extends State<ListenWidget> {
   final _tuner = TunerRs(DynamicLibrary.process());
 
   Future<void> _openRecorder() async {
-    // var status = await Permission.microphone.request();
-    // if (status != PermissionStatus.granted) {
-    //   throw RecordingPermissionException('Microphone permission not granted');
-    // }
     await _mRecorder!.openAudioSession();
     setState(() {
       _mRecorderIsInited = true;
@@ -64,7 +60,7 @@ class _ListenWidgetState extends State<ListenWidget> {
         recordingDataController.stream.listen((buffer) async {
       if (buffer is FoodData) {
         final newPeak = await _tuner.fft(byteBuffer: buffer.data!);
-        // debugPrint('Intensity: ${newPeak.intensity}');
+        debugPrint('Intensity: ${newPeak.intensity}');
         if (newPeak.intensity > tMinIntensity &&
             newPeak.freq > tMinFrequency &&
             newPeak.freq < tMaxFrequency) {
