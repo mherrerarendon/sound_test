@@ -1,6 +1,7 @@
-use crate::api::Partial;
-
-const SAMPLE_RATE: f32 = 44000.0;
+use crate::{
+    api::Partial,
+    constants::{PARTIAL_INTENSITY_SCALING, SAMPLE_RATE},
+};
 
 pub struct HarmonicPartials {
     harmonic_partials: Vec<Partial>,
@@ -21,7 +22,7 @@ impl HarmonicPartials {
         let ratio = SAMPLE_RATE / num_samples as f32;
         Partial {
             freq: (partial.freq as f32 * ratio),
-            intensity: partial.intensity / 1000.0,
+            intensity: partial.intensity * PARTIAL_INTENSITY_SCALING,
         }
     }
 
