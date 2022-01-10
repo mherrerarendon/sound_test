@@ -119,13 +119,11 @@ class PitchSlider extends StatelessWidget {
                           ? const SizedBox()
                           : Container(
                               width: kCellWidth,
-                              // padding: EdgeInsets.only(left: textPadding),
                               alignment: Alignment.bottomLeft,
                               child: Align(
                                 alignment: Alignment.centerLeft,
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.center,
-                                  //mainAxisSize: MainAxisSize.min,
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
                                     Align(
