@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:sound_test/models/fft_peak.dart';
 import 'package:provider/provider.dart';
 
-// conreq = 4000;
 const kCellWidth = 80.0;
-const kCellHeight = 20.0;
+const kCellHeight = 30.0;
 const kNumCells = 12 * 8 + 2; // Notes in regular piano
 
 const kNotes = [
@@ -52,8 +51,7 @@ class PitchSlider extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Container(
-              child: SizedBox(
+          SizedBox(
             child: Align(
               alignment: Alignment.center,
               child: Container(
@@ -62,10 +60,8 @@ class PitchSlider extends StatelessWidget {
                 color: Colors.black,
               ),
             ),
-          )),
+          ),
           Container(
-            // width: screenMaxWidth + 40,
-            // padding: EdgeInsets.only(left: 20.0, right: 2.0),
             height: kCellHeight,
             child: Center(
               child: MediaQuery.removePadding(
@@ -76,7 +72,7 @@ class PitchSlider extends StatelessWidget {
                 child: ListView.builder(
                     itemCount: kNumCells,
                     controller: _scrollController,
-                    physics: NeverScrollableScrollPhysics(),
+                    physics: const NeverScrollableScrollPhysics(),
                     scrollDirection: Axis.horizontal,
                     itemBuilder: (context1, index) {
                       // return scale steps
@@ -111,16 +107,13 @@ class PitchSlider extends StatelessWidget {
                 child: ListView.builder(
                     itemCount: kNumCells,
                     controller: _scrollController,
-                    physics: NeverScrollableScrollPhysics(),
+                    physics: const NeverScrollableScrollPhysics(),
                     scrollDirection: Axis.horizontal,
                     itemBuilder: (context1, index) {
                       final octave = ((index + 10) ~/ 12)
                           .toString(); // plus 10 because we are starting at A0
                       final noteName = kNotes[index % 12];
                       final scaleText = '$noteName$octave';
-
-                      // find text padding to align text in center
-                      double? textPadding = -5.0;
 
                       return index == kNumCells
                           ? const SizedBox()
@@ -141,8 +134,7 @@ class PitchSlider extends StatelessWidget {
                                         scaleText,
                                         overflow: TextOverflow.ellipsis,
                                         style: const TextStyle(
-                                          letterSpacing: 1.0,
-                                        ),
+                                            letterSpacing: 1.0, fontSize: 24),
                                       ),
                                     )
                                   ],
