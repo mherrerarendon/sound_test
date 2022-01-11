@@ -3,14 +3,14 @@ import 'dart:ffi';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:sound_test/api.dart';
 import 'package:flutter/material.dart';
-import 'package:sound_test/models/fft_peak.dart';
+import 'package:sound_test/models/partials_model.dart';
 import 'package:provider/provider.dart';
 
 const int tSampleRate = 44000;
 const int tNumChannels = 1;
 const int tBitsPerSample = 16;
 const int tBitRate = tSampleRate * tNumChannels * tBitsPerSample;
-const double tMinIntensity = 3000.0;
+const double tMinIntensity = 5000.0;
 const double tMaxFrequency = 4186.0;
 const double tMinFrequency = 27.5;
 typedef _Fn = void Function();
@@ -31,7 +31,7 @@ class _ListenWidgetState extends State<ListenWidget> {
   final _tuner = TunerRs(DynamicLibrary.process());
 
   Future<void> _openRecorder() async {
-    await _mRecorder!.openAudioSession();
+    await _mRecorder!.openAudioSession(category: SessionCategory.playAndRecord);
     setState(() {
       _mRecorderIsInited = true;
     });
@@ -59,13 +59,14 @@ class _ListenWidgetState extends State<ListenWidget> {
     _mRecordingDataSubscription =
         recordingDataController.stream.listen((buffer) async {
       if (buffer is FoodData) {
-        final newPeak = await _tuner.fft(byteBuffer: buffer.data!);
-        debugPrint('Intensity: ${newPeak.intensity}');
-        if (newPeak.intensity > tMinIntensity &&
-            newPeak.freq > tMinFrequency &&
-            newPeak.freq < tMaxFrequency) {
-          Provider.of<FftPeakModel>(context, listen: false)
-              .setNewPeak(newPeak.freq, newPeak.intensity);
+        final harmonicPartials = await _tuner.fft(byteBuffer: buffer.data!);
+        final fundamental = harmonicPartials[0];
+        debugPrint('num fundamentals: ${harmonicPartials.length}');
+        if (fundamental.intensity > tMinIntensity &&
+            fundamental.freq > tMinFrequency &&
+            fundamental.freq < tMaxFrequency) {
+          Provider.of<PartialsModel>(context, listen: false)
+              .setNewPartials(harmonicPartials);
         }
       }
     });

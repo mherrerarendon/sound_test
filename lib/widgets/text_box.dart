@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 
-class LabelBox extends StatelessWidget {
-  final String label;
-  final String value;
-  const LabelBox(this.label, this.value, {Key? key}) : super(key: key);
+class MyTextBox extends StatelessWidget {
+  final String text;
+  const MyTextBox(this.text, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +21,7 @@ class LabelBox extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Text('$label: $value'),
+        child: Text(text, style: const TextStyle(fontSize: 20)),
       ),
     );
   }

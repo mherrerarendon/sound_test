@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sound_test/models/fft_peak.dart';
+import 'package:sound_test/models/partials_model.dart';
 import 'package:provider/provider.dart';
 
 const kCellWidth = 80.0;
@@ -31,11 +31,9 @@ class PitchSlider extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
-      final fftPeakModel = Provider.of<FftPeakModel>(context);
+      final fftPeakModel = Provider.of<PartialsModel>(context);
       scrollTo() {
-        debugPrint('fftPeakModel.freq: ${fftPeakModel.freq}');
         final stepsFromA4 = fftPeakModel.stepsFromA4;
-        debugPrint('stepsFromA4: $stepsFromA4');
         if (stepsFromA4 + kA4Index >= 0) {
           final offset = kA4ScrollOffset +
               stepsFromA4 * kCellWidth -

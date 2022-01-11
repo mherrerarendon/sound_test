@@ -1,6 +1,6 @@
 use crate::{
     api::Partial,
-    constants::{PARTIAL_INTENSITY_SCALING, SAMPLE_RATE},
+    constants::{MAX_FREQ, PARTIAL_INTENSITY_SCALING, SAMPLE_RATE},
 };
 
 pub struct HarmonicPartials {
@@ -14,6 +14,7 @@ impl HarmonicPartials {
         }
     }
 
+    // TODO: dereference trait
     pub fn harmonic_partials(&self) -> &[Partial] {
         &self.harmonic_partials
     }
@@ -32,12 +33,19 @@ impl HarmonicPartials {
     ) -> Vec<Partial> {
         let mut highest_intensity_partials: Vec<Partial> = vec![Partial::default(); num];
         absolute_values.iter().for_each(|a| {
-            Self::add_partial_if_high_intensity(a, &mut highest_intensity_partials);
+            Self::add_partial_if_high_intensity_and_within_freq_range(
+                a,
+                &mut highest_intensity_partials,
+            );
         });
-        highest_intensity_partials
+        highest_intensity_partials = highest_intensity_partials
             .iter()
             .map(|partial| Self::scale_partial(partial, absolute_values.len()))
-            .collect()
+            .collect();
+
+        // Not needed, but useful for debugging.
+        highest_intensity_partials.sort_by_key(|partial| partial.intensity.round() as i32);
+        highest_intensity_partials
     }
 
     fn calc_harmonic_partials(num: usize, absolute_values: &[(usize, f32)]) -> Vec<Partial> {
@@ -72,13 +80,13 @@ impl HarmonicPartials {
         }
     }
 
-    fn add_partial_if_high_intensity(
+    fn add_partial_if_high_intensity_and_within_freq_range(
         partial: &(usize, f32),
         highest_intensity_partials: &mut Vec<Partial>,
     ) {
         let least_intense_idx = Self::get_index_of_lowest_intensity(&highest_intensity_partials);
         let least_intense_partial = &highest_intensity_partials[least_intense_idx];
-        if partial.1 > least_intense_partial.intensity {
+        if partial.1 > least_intense_partial.intensity && partial.0 < MAX_FREQ.round() as usize {
             highest_intensity_partials[least_intense_idx] = Partial {
                 freq: partial.0 as f32,
                 intensity: partial.1,

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:sound_test/widgets/main_widget.dart';
 import 'package:provider/provider.dart';
-import 'package:sound_test/models/fft_peak.dart';
+import 'package:sound_test/models/partials_model.dart';
 
 void main() {
   runApp(ChangeNotifierProvider(
-    create: (context) => FftPeakModel(),
+    create: (context) => PartialsModel(),
     child: const MyApp(),
   ));
 }

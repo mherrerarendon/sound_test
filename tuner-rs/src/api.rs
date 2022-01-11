@@ -15,7 +15,7 @@ impl Default for Partial {
     }
 }
 
-pub fn fft(byte_buffer: Vec<u8>) -> anyhow::Result<Partial> {
+pub fn fft(byte_buffer: Vec<u8>) -> anyhow::Result<Vec<Partial>> {
     let mut tuner = Tuner::new(byte_buffer.len() / 2);
     Ok(tuner.fft(byte_buffer)?)
 }

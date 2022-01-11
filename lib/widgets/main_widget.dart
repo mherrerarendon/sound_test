@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:sound_test/widgets/label_box.dart';
+import 'package:sound_test/widgets/partial_desc.dart';
 import 'package:sound_test/widgets/listen_widget.dart';
 import 'package:sound_test/widgets/pitch_slider.dart';
-import 'package:sound_test/models/fft_peak.dart';
+import 'package:sound_test/models/partials_model.dart';
+import 'package:sound_test/widgets/all_partials.dart';
 import 'package:provider/provider.dart';
 // import 'package:permission_handler/permission_handler.dart';
 
@@ -23,13 +24,11 @@ class _MainWidgetState extends State<MainWidget> {
         children: [
           const ListenWidget(),
           PitchSlider(),
-          Consumer<FftPeakModel>(builder: (context, fftPeakModel, _) {
-            return LabelBox('Frequency', fftPeakModel.freq.toStringAsFixed(2));
-          }),
-          Consumer<FftPeakModel>(builder: (context, fftPeakModel, _) {
-            return LabelBox(
-                'Intensity', fftPeakModel.intensity.toStringAsFixed(2));
-          }),
+          // Consumer<PartialsModel>(builder: (context, fftPeakModel, _) {
+          //   return PartialDesc(fftPeakModel.freq.toStringAsFixed(2),
+          //       fftPeakModel.intensity.toStringAsFixed(2));
+          // }),
+          AllPartials(),
         ],
       );
     }

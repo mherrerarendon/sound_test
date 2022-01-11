@@ -28,7 +28,7 @@ impl Tuner {
         }
     }
 
-    pub fn fft(&mut self, byte_buffer: Vec<u8>) -> Result<Partial, TunerError> {
+    pub fn fft(&mut self, byte_buffer: Vec<u8>) -> Result<Vec<Partial>, TunerError> {
         if self.optimized_num_samples > byte_buffer.len() / 2 {
             return Err(TunerError::FftFailed);
         }
@@ -54,9 +54,9 @@ impl Tuner {
                 (i, (sum as f32).sqrt())
             })
             .collect();
-        let harmonics = HarmonicPartials::new(5, &absolute_values);
+        let harmonics = HarmonicPartials::new(30, &absolute_values);
 
-        Ok(harmonics.harmonic_partials()[0].clone())
+        Ok(harmonics.harmonic_partials().iter().cloned().collect())
     }
 }
 
@@ -73,12 +73,22 @@ mod tests {
     }
 
     #[test]
-    fn fft_works() -> anyhow::Result<()> {
+    fn noise() -> anyhow::Result<()> {
         let mut sample_data: SampleData = serde_json::from_str(include_str!("sampleData.json"))?;
         let buffer = sample_data.data.take().unwrap();
         let mut tuner = Tuner::new(buffer.len() / 2);
         let fft_peak = tuner.fft(buffer)?;
-        assert!(fft_peak.freq.approx_eq(120.849, (0.02, 2)));
+        assert!(fft_peak[0].freq.approx_eq(120.849, (0.02, 2)));
+        Ok(())
+    }
+
+    #[test]
+    fn c5() -> anyhow::Result<()> {
+        let mut sample_data: SampleData = serde_json::from_str(include_str!("c5.json"))?;
+        let buffer = sample_data.data.take().unwrap();
+        let mut tuner = Tuner::new(buffer.len() / 2);
+        let fft_peak = tuner.fft(buffer)?;
+        assert!(fft_peak[0].freq.approx_eq(523.68, (0.02, 2)));
         Ok(())
     }
 }
