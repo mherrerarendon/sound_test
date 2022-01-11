@@ -31,7 +31,28 @@ class _ListenWidgetState extends State<ListenWidget> {
   final _tuner = TunerRs(DynamicLibrary.process());
 
   Future<void> _openRecorder() async {
-    await _mRecorder!.openAudioSession(category: SessionCategory.playAndRecord);
+    await _mRecorder!.openAudioSession();
+    var recordingDataController = StreamController<Food>();
+    _mRecordingDataSubscription =
+        recordingDataController.stream.listen((buffer) async {
+      if (buffer is FoodData) {
+        final harmonicPartials = await _tuner.fft(byteBuffer: buffer.data!);
+        final fundamental = harmonicPartials[0];
+        if (fundamental.intensity > tMinIntensity &&
+            fundamental.freq > tMinFrequency &&
+            fundamental.freq < tMaxFrequency) {
+          Provider.of<PartialsModel>(context, listen: false)
+              .setNewPartials(harmonicPartials);
+        }
+      }
+    });
+    await _mRecorder!.startRecorder(
+      toStream: recordingDataController.sink,
+      codec: Codec.pcm16,
+      numChannels: tNumChannels,
+      bitRate: tBitRate,
+      sampleRate: tSampleRate,
+    );
     setState(() {
       _mRecorderIsInited = true;
     });
@@ -51,34 +72,10 @@ class _ListenWidgetState extends State<ListenWidget> {
     super.dispose();
   }
 
-  // ----------------------  Here is the code to record to a Stream ------------
-
-  Future<void> record() async {
-    assert(_mRecorderIsInited);
-    var recordingDataController = StreamController<Food>();
-    _mRecordingDataSubscription =
-        recordingDataController.stream.listen((buffer) async {
-      if (buffer is FoodData) {
-        final harmonicPartials = await _tuner.fft(byteBuffer: buffer.data!);
-        final fundamental = harmonicPartials[0];
-        debugPrint('num fundamentals: ${harmonicPartials.length}');
-        if (fundamental.intensity > tMinIntensity &&
-            fundamental.freq > tMinFrequency &&
-            fundamental.freq < tMaxFrequency) {
-          Provider.of<PartialsModel>(context, listen: false)
-              .setNewPartials(harmonicPartials);
-        }
-      }
-    });
-    await _mRecorder!.startRecorder(
-      toStream: recordingDataController.sink,
-      codec: Codec.pcm16,
-      numChannels: tNumChannels,
-      bitRate: tBitRate,
-      sampleRate: tSampleRate,
-    );
-    setState(() {});
-  }
+  // Future<void> record() async {
+  //   assert(_mRecorderIsInited);
+  //   setState(() {});
+  // }
 
   Future<void> stopRecorder() async {
     await _mRecorder!.stopRecorder();
@@ -92,11 +89,9 @@ class _ListenWidgetState extends State<ListenWidget> {
     if (!_mRecorderIsInited) {
       return null;
     }
-    return _mRecorder!.isStopped
-        ? record
-        : () {
-            stopRecorder().then((value) => setState(() {}));
-          };
+    return _mRecorder!.isPaused
+        ? () => _mRecorder!.resumeRecorder().then((value) => setState(() {}))
+        : () => _mRecorder!.pauseRecorder().then((value) => setState(() {}));
   }
 
   @override
@@ -116,7 +111,7 @@ class _ListenWidgetState extends State<ListenWidget> {
       ),
       child: ElevatedButton(
         onPressed: getRecorderFn(),
-        child: Text(_mRecorder!.isRecording ? 'Stop' : 'Listen'),
+        child: Text(_mRecorder!.isRecording ? 'Pause' : 'Listen'),
       ),
     );
   }

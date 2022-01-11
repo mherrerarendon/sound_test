@@ -40,7 +40,8 @@ class PitchSlider extends StatelessWidget {
               (constraints.maxWidth / 2) +
               (kCellWidth / 2);
           _scrollController.animateTo(offset,
-              duration: const Duration(milliseconds: 50), curve: Curves.linear);
+              duration: const Duration(milliseconds: 100),
+              curve: Curves.linear);
         }
       }
 

@@ -17,9 +17,7 @@ class AllPartials extends StatelessWidget {
           itemCount: partials.numPartials,
           itemBuilder: (context, index) {
             final Partial partial = partials.getPartial(index);
-            // return Text(partial.freq.toStringAsFixed(2));
             return SizedBox(
-              // height: 30,
               child: PartialDesc(partial.freq.toStringAsFixed(2),
                   partial.intensity.toStringAsFixed(2)),
             );
