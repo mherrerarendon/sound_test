@@ -71,6 +71,10 @@ impl HarmonicPartials {
     }
 
     fn harmonic(partial: &Partial, harmonic: &Partial) -> Option<f32> {
+        if harmonic.freq.round() as i32 == 0 {
+            return None;
+        }
+
         if (harmonic.freq.round() as usize) % (partial.freq.round() as usize) == 0 {
             Some(harmonic.freq / partial.freq)
         } else if (partial.freq.round() as usize) % (harmonic.freq.round() as usize) == 0 {

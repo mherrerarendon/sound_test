@@ -56,7 +56,7 @@ class PitchSlider extends StatelessWidget {
               child: Container(
                 height: 10.0,
                 width: 10,
-                color: Colors.black,
+                color: Theme.of(context).colorScheme.primaryVariant,
               ),
             ),
           ),
@@ -86,7 +86,9 @@ class PitchSlider extends StatelessWidget {
                                   child: Container(
                                     height: 10.0,
                                     width: 2,
-                                    color: Colors.black,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .secondaryVariant,
                                   ),
                                 ),
                               ),
@@ -130,8 +132,12 @@ class PitchSlider extends StatelessWidget {
                                       child: Text(
                                         scaleText,
                                         overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                            letterSpacing: 1.0, fontSize: 24),
+                                        style: TextStyle(
+                                            letterSpacing: 1.0,
+                                            fontSize: 24,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .secondaryVariant),
                                       ),
                                     )
                                   ],

@@ -72,11 +72,6 @@ class _ListenWidgetState extends State<ListenWidget> {
     super.dispose();
   }
 
-  // Future<void> record() async {
-  //   assert(_mRecorderIsInited);
-  //   setState(() {});
-  // }
-
   Future<void> stopRecorder() async {
     await _mRecorder!.stopRecorder();
     if (_mRecordingDataSubscription != null) {
@@ -96,23 +91,10 @@ class _ListenWidgetState extends State<ListenWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(3),
-      padding: const EdgeInsets.all(3),
-      height: 80,
-      width: double.infinity,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: const Color(0xFFFAF0E6),
-        border: Border.all(
-          color: Colors.indigo,
-          width: 3,
-        ),
-      ),
-      child: ElevatedButton(
-        onPressed: getRecorderFn(),
-        child: Text(_mRecorder!.isRecording ? 'Pause' : 'Listen'),
-      ),
+    return FloatingActionButton(
+      onPressed: getRecorderFn(),
+      child: Icon(
+          _mRecorder!.isRecording ? Icons.mic_outlined : Icons.mic_off_sharp),
     );
   }
 }

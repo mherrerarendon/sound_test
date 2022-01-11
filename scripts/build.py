@@ -39,6 +39,8 @@ def copy_artifacts(release):
     src_path = os.path.join(root_dir, 'tuner-rs', 'target', 'universal',
                             'release' if release else 'debug', 'libtuner_rs.a')
     dest_path = os.path.join(root_dir, 'ios', 'Runner', 'libtuner_rs.a')
+    if os.path.exists(dest_path):
+        os.remove(dest_path)
     copyfile(src_path, dest_path)
 
 
