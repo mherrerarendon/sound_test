@@ -110,8 +110,8 @@ class PitchSlider extends StatelessWidget {
                     physics: const NeverScrollableScrollPhysics(),
                     scrollDirection: Axis.horizontal,
                     itemBuilder: (context1, index) {
-                      final octave = ((index + 10) ~/ 12)
-                          .toString(); // plus 10 because we are starting at A0
+                      final octave = ((index + 9) ~/ 12)
+                          .toString(); // plus 9 because we are starting at A0
                       final noteName = kNotes[index % 12];
                       final scaleText = '$noteName$octave';
 
