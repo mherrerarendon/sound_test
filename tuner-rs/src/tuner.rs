@@ -74,21 +74,90 @@ mod tests {
 
     #[test]
     fn noise() -> anyhow::Result<()> {
-        let mut sample_data: SampleData = serde_json::from_str(include_str!("sampleData.json"))?;
+        let mut sample_data: SampleData =
+            serde_json::from_str(include_str!("../test_data/noise.json"))?;
         let buffer = sample_data.data.take().unwrap();
         let mut tuner = Tuner::new(buffer.len() / 2);
-        let fft_peak = tuner.fft(buffer)?;
-        assert!(fft_peak[0].freq.approx_eq(120.849, (0.02, 2)));
+        let partials = tuner.fft(buffer)?;
+        assert!(partials[0].freq.approx_eq(40.28, (0.02, 2)));
+        assert!(partials[1].freq.approx_eq(120.849, (0.02, 2)));
         Ok(())
     }
 
     #[test]
-    fn c5() -> anyhow::Result<()> {
-        let mut sample_data: SampleData = serde_json::from_str(include_str!("c5.json"))?;
+    fn tuner_c5() -> anyhow::Result<()> {
+        let mut sample_data: SampleData =
+            serde_json::from_str(include_str!("../test_data/tuner_c5.json"))?;
+        let buffer = sample_data.data.take().unwrap();
+        let mut tuner = Tuner::new(buffer.len() / 2);
+        let partials = tuner.fft(buffer)?;
+        // assert!(partials[0].freq.approx_eq(523.68, (0.02, 2)));
+        // assert_eq!(partials.len(), 1);
+        Ok(())
+    }
+
+    #[test]
+    fn cello_open_a() -> anyhow::Result<()> {
+        let mut sample_data: SampleData =
+            serde_json::from_str(include_str!("../test_data/cello_open_a.json"))?;
+        let buffer = sample_data.data.take().unwrap();
+        let mut tuner = Tuner::new(buffer.len() / 2);
+        let partials = tuner.fft(buffer)?;
+        assert!(partials[0].freq.approx_eq(220.21, (0.02, 2)));
+        assert!(partials[1].freq.approx_eq(440.43, (0.02, 2)));
+        assert!(partials[2].freq.approx_eq(880.86, (0.02, 2)));
+        assert_eq!(partials.len(), 3);
+        Ok(())
+    }
+
+    #[test]
+    fn cello_open_d() -> anyhow::Result<()> {
+        let mut sample_data: SampleData =
+            serde_json::from_str(include_str!("../test_data/cello_open_d.json"))?;
         let buffer = sample_data.data.take().unwrap();
         let mut tuner = Tuner::new(buffer.len() / 2);
         let fft_peak = tuner.fft(buffer)?;
-        assert!(fft_peak[0].freq.approx_eq(523.68, (0.02, 2)));
+        // assert!(fft_peak[0].freq.approx_eq(146.83, (0.02, 2)));
+        Ok(())
+    }
+
+    #[test]
+    fn cello_open_g() -> anyhow::Result<()> {
+        let mut sample_data: SampleData =
+            serde_json::from_str(include_str!("../test_data/cello_open_g.json"))?;
+        let buffer = sample_data.data.take().unwrap();
+        let mut tuner = Tuner::new(buffer.len() / 2);
+        let fft_peak = tuner.fft(buffer)?;
+        assert!(fft_peak[0].freq.approx_eq(96.68, (0.02, 2)));
+        assert!(fft_peak[1].freq.approx_eq(193.36, (0.02, 2)));
+        assert!(fft_peak[2].freq.approx_eq(290.04, (0.02, 2)));
+        assert!(fft_peak[3].freq.approx_eq(386.72, (0.02, 2)));
+        assert_eq!(fft_peak.len(), 4);
+        Ok(())
+    }
+
+    #[test]
+    fn cello_open_c() -> anyhow::Result<()> {
+        let mut sample_data: SampleData =
+            serde_json::from_str(include_str!("../test_data/cello_open_c.json"))?;
+        let buffer = sample_data.data.take().unwrap();
+        let mut tuner = Tuner::new(buffer.len() / 2);
+        let fft_peak = tuner.fft(buffer)?;
+        assert!(fft_peak[0].freq.approx_eq(64.45, (0.02, 2)));
+        assert!(fft_peak[1].freq.approx_eq(128.91, (0.02, 2)));
+        assert!(fft_peak[2].freq.approx_eq(257.81, (0.02, 2)));
+        assert_eq!(fft_peak.len(), 8);
+        Ok(())
+    }
+
+    #[test]
+    fn cello_open_c_out_of_tune() -> anyhow::Result<()> {
+        let mut sample_data: SampleData =
+            serde_json::from_str(include_str!("../test_data/cello_open_c_out_of_tune.json"))?;
+        let buffer = sample_data.data.take().unwrap();
+        let mut tuner = Tuner::new(buffer.len() / 2);
+        let fft_peak = tuner.fft(buffer)?;
+        // assert!(fft_peak[0].freq.approx_eq(65.41, (0.02, 2)));
         Ok(())
     }
 }

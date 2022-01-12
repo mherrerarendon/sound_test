@@ -75,9 +75,9 @@ impl HarmonicPartials {
             return None;
         }
 
-        if (harmonic.freq.round() as usize) % (partial.freq.round() as usize) == 0 {
+        if (harmonic.freq % partial.freq).round() as i32 == 0 {
             Some(harmonic.freq / partial.freq)
-        } else if (partial.freq.round() as usize) % (harmonic.freq.round() as usize) == 0 {
+        } else if (partial.freq % harmonic.freq).round() as i32 == 0 {
             Some(partial.freq / harmonic.freq)
         } else {
             None
