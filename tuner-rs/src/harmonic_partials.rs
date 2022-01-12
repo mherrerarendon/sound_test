@@ -2,21 +2,56 @@ use crate::{
     api::Partial,
     constants::{MAX_FREQ, PARTIAL_INTENSITY_SCALING, SAMPLE_RATE},
 };
+use float_cmp::ApproxEq;
 
-pub struct HarmonicPartials {
-    harmonic_partials: Vec<Partial>,
+#[derive(Debug, Clone)]
+pub struct HarmonicNote {
+    pub harmonics: [Partial; 5],
 }
 
-impl HarmonicPartials {
-    pub fn new(max_partials: usize, absolute_values: &[(usize, f32)]) -> Self {
-        Self {
-            harmonic_partials: Self::calc_harmonic_partials(max_partials, absolute_values),
+impl Default for HarmonicNote {
+    fn default() -> Self {
+        HarmonicNote {
+            harmonics: [
+                Partial::default(),
+                Partial::default(),
+                Partial::default(),
+                Partial::default(),
+                Partial::default(),
+            ],
         }
     }
+}
 
-    // TODO: dereference trait
-    pub fn harmonic_partials(&self) -> &[Partial] {
-        &self.harmonic_partials
+impl HarmonicNote {
+    pub fn calc_harmonic_note(absolute_values: &[(usize, f32)]) -> Option<HarmonicNote> {
+        let highest_intensity_partials =
+            Self::scaled_and_ordered_highest_intensity_partials(absolute_values);
+        let mut harmonic_notes = Self::decompose_into_notes(&highest_intensity_partials);
+        harmonic_notes.sort_by_key(|note| note.harmonics[0].freq.round() as i32);
+        harmonic_notes.sort_by(|a, b| b.num_overtones().cmp(&a.num_overtones()));
+        harmonic_notes.into_iter().nth(0)
+    }
+
+    fn num_overtones(&self) -> usize {
+        self.harmonics
+            .iter()
+            .skip(1)
+            .filter(|p| p.freq > 0.0)
+            .count()
+    }
+
+    fn new(fundamental: Partial) -> Self {
+        let mut note = HarmonicNote::default();
+        note.harmonics[0] = fundamental;
+        note
+    }
+
+    fn is_harmonic(&self) -> bool {
+        self.harmonics
+            .iter()
+            .skip(1)
+            .any(|partial| partial.freq.approx_eq(0.0, (0.02, 2)))
     }
 
     fn scale_partial(partial: &Partial, num_samples: usize) -> Partial {
@@ -27,11 +62,10 @@ impl HarmonicPartials {
         }
     }
 
-    fn scaled_highest_intensity_partials(
-        num: usize,
+    fn scaled_and_ordered_highest_intensity_partials(
         absolute_values: &[(usize, f32)],
     ) -> Vec<Partial> {
-        let mut highest_intensity_partials: Vec<Partial> = vec![Partial::default(); num];
+        let mut highest_intensity_partials: Vec<Partial> = vec![Partial::default(); 30];
         absolute_values.iter().for_each(|a| {
             Self::add_partial_if_high_intensity_and_within_freq_range(
                 a,
@@ -43,31 +77,31 @@ impl HarmonicPartials {
             .map(|partial| Self::scale_partial(partial, absolute_values.len()))
             .collect();
 
-        // Not needed, but useful for debugging.
-        highest_intensity_partials.sort_by_key(|partial| partial.intensity.round() as i32);
+        highest_intensity_partials.sort_by_key(|partial| partial.freq.round() as i32);
         highest_intensity_partials
     }
 
-    fn calc_harmonic_partials(num: usize, absolute_values: &[(usize, f32)]) -> Vec<Partial> {
-        let highest_intensity_partials =
-            Self::scaled_highest_intensity_partials(num, absolute_values);
-        let highest_intensity_partial = highest_intensity_partials
+    fn decompose_into_notes(ordered_partials: &[Partial]) -> Vec<HarmonicNote> {
+        let mut notes: Vec<HarmonicNote> = Vec::new();
+        ordered_partials
             .iter()
-            .reduce(|accum, item| {
-                if item.intensity > accum.intensity {
-                    item
-                } else {
-                    accum
+            .enumerate()
+            .for_each(|(idx, partial)| {
+                let mut note = HarmonicNote::new(partial.clone());
+                (2..note.harmonics.len()).for_each(|harmonic| {
+                    let overtone = partial.freq * harmonic as f32;
+                    if let Some(partial) = ordered_partials
+                        .iter()
+                        .find(|partial| partial.freq.approx_eq(overtone, (0.02, 2)))
+                    {
+                        note.harmonics[harmonic - 1] = partial.clone();
+                    }
+                });
+                if note.is_harmonic() {
+                    notes.push(note);
                 }
-            })
-            .unwrap();
-        let mut harmonics: Vec<Partial> = highest_intensity_partials
-            .iter()
-            .filter(|partial| Self::harmonic(partial, highest_intensity_partial).is_some())
-            .map(|partial| partial.clone())
-            .collect();
-        harmonics.sort_by_key(|partial| partial.freq.round() as usize);
-        harmonics
+            });
+        notes
     }
 
     fn harmonic(partial: &Partial, harmonic: &Partial) -> Option<f32> {

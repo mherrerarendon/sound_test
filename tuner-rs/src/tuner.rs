@@ -1,4 +1,4 @@
-use crate::{api::Partial, harmonic_partials::HarmonicPartials, TunerError};
+use crate::{api::Partial, harmonic_partials::HarmonicNote, TunerError};
 use rustfft::{num_complex::Complex, FftPlanner};
 
 pub struct Tuner {
@@ -54,9 +54,10 @@ impl Tuner {
                 (i, (sum as f32).sqrt())
             })
             .collect();
-        let harmonics = HarmonicPartials::new(30, &absolute_values);
+        let harmonics =
+            HarmonicNote::calc_harmonic_note(&absolute_values).ok_or(TunerError::FftFailed)?;
 
-        Ok(harmonics.harmonic_partials().iter().cloned().collect())
+        Ok(harmonics.harmonics.iter().cloned().collect())
     }
 }
 
