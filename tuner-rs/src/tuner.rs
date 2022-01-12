@@ -118,7 +118,7 @@ mod tests {
         let buffer = sample_data.data.take().unwrap();
         let mut tuner = Tuner::new(buffer.len() / 2);
         let fft_peak = tuner.fft(buffer)?;
-        // assert!(fft_peak[0].freq.approx_eq(146.83, (0.02, 2)));
+        assert!(fft_peak[0].freq.approx_eq(146.83, (0.02, 2)));
         Ok(())
     }
 

@@ -83,39 +83,22 @@ impl HarmonicNote {
 
     fn decompose_into_notes(ordered_partials: &[Partial]) -> Vec<HarmonicNote> {
         let mut notes: Vec<HarmonicNote> = Vec::new();
-        ordered_partials
-            .iter()
-            .enumerate()
-            .for_each(|(idx, partial)| {
-                let mut note = HarmonicNote::new(partial.clone());
-                (2..note.harmonics.len()).for_each(|harmonic| {
-                    let overtone = partial.freq * harmonic as f32;
-                    if let Some(partial) = ordered_partials
-                        .iter()
-                        .find(|partial| partial.freq.approx_eq(overtone, (0.02, 2)))
-                    {
-                        note.harmonics[harmonic - 1] = partial.clone();
-                    }
-                });
-                if note.is_harmonic() {
-                    notes.push(note);
+        ordered_partials.iter().for_each(|partial| {
+            let mut note = HarmonicNote::new(partial.clone());
+            (2..note.harmonics.len()).for_each(|harmonic| {
+                let overtone = partial.freq * harmonic as f32;
+                if let Some(partial) = ordered_partials
+                    .iter()
+                    .find(|partial| partial.freq.approx_eq(overtone, (0.02, 2)))
+                {
+                    note.harmonics[harmonic - 1] = partial.clone();
                 }
             });
+            if note.is_harmonic() {
+                notes.push(note);
+            }
+        });
         notes
-    }
-
-    fn harmonic(partial: &Partial, harmonic: &Partial) -> Option<f32> {
-        if harmonic.freq.round() as i32 == 0 {
-            return None;
-        }
-
-        if (harmonic.freq % partial.freq).round() as i32 == 0 {
-            Some(harmonic.freq / partial.freq)
-        } else if (partial.freq % harmonic.freq).round() as i32 == 0 {
-            Some(partial.freq / harmonic.freq)
-        } else {
-            None
-        }
     }
 
     fn add_partial_if_high_intensity_and_within_freq_range(
