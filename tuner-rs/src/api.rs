@@ -2,8 +2,8 @@ use crate::tuner::Tuner;
 
 #[derive(Debug, Clone)]
 pub struct Partial {
-    pub freq: f32,
-    pub intensity: f32,
+    pub freq: f64,
+    pub intensity: f64,
 }
 
 impl Default for Partial {
@@ -17,5 +17,5 @@ impl Default for Partial {
 
 pub fn fft(byte_buffer: Vec<u8>) -> anyhow::Result<Vec<Partial>> {
     let mut tuner = Tuner::new(byte_buffer.len() / 2);
-    Ok(tuner.fft(byte_buffer)?)
+    Ok(tuner.detect_pitch(byte_buffer)?)
 }
