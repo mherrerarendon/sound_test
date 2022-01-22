@@ -7,6 +7,7 @@ mod tuner;
 #[derive(Debug)]
 pub enum TunerError {
     FftFailed,
+    UnknownAlgorithm,
 }
 
 impl std::fmt::Display for TunerError {

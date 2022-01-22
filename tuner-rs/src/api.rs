@@ -16,6 +16,6 @@ impl Default for Partial {
 }
 
 pub fn fft(byte_buffer: Vec<u8>) -> anyhow::Result<Vec<Partial>> {
-    let mut tuner = Tuner::new(byte_buffer.len() / 2);
+    let mut tuner = Tuner::new(byte_buffer.len() / 2, "marco");
     Ok(tuner.detect_pitch(byte_buffer)?)
 }
