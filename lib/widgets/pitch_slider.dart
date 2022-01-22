@@ -74,7 +74,6 @@ class PitchSlider extends StatelessWidget {
                     physics: const NeverScrollableScrollPhysics(),
                     scrollDirection: Axis.horizontal,
                     itemBuilder: (context1, index) {
-                      // return scale steps
                       return index == kNumCells
                           ? const SizedBox()
                           : Container(
@@ -86,9 +85,13 @@ class PitchSlider extends StatelessWidget {
                                   child: Container(
                                     height: 10.0,
                                     width: 2,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .secondaryVariant,
+                                    color: fftPeakModel.inTune()
+                                        ? Theme.of(context)
+                                            .colorScheme
+                                            .primaryVariant
+                                        : Theme.of(context)
+                                            .colorScheme
+                                            .secondaryVariant,
                                   ),
                                 ),
                               ),

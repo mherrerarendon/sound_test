@@ -1,9 +1,12 @@
+pub mod cepstrum;
 pub mod marco_detector;
 
 use float_cmp::ApproxEq;
 use num_traits::float::FloatCore;
 
 use crate::{api::Partial, constants::NUM_PARTIALS};
+
+use self::{cepstrum::CepstrumDetector, marco_detector::MarcoDetector};
 
 #[derive(Debug, Clone)]
 pub struct HarmonicPitch {
@@ -25,14 +28,6 @@ impl Default for HarmonicPitch {
 }
 
 impl HarmonicPitch {
-    fn num_overtones(&self) -> usize {
-        self.harmonics
-            .iter()
-            .skip(1)
-            .filter(|p| p.freq > 0.0)
-            .count()
-    }
-
     fn absolute_intensity(&self) -> i64 {
         self.harmonics
             .iter()
@@ -53,10 +48,30 @@ impl HarmonicPitch {
     }
 }
 
-// Assumes sample rate
+// TODO: Assumes sample rate
 pub trait HarmonicDetector<T>
 where
     T: FloatCore,
 {
     fn get_harmonics(&mut self, signal: &[T]) -> Option<HarmonicPitch>;
+}
+
+// TODO: use enum dispatch
+pub enum Detector {
+    Marco(MarcoDetector),
+    Cepstrum(CepstrumDetector),
+}
+
+impl Detector {
+    pub fn new(num_samples: usize) -> Self {
+        // Detector::Marco(MarcoDetector::new(num_samples))
+        Detector::Cepstrum(CepstrumDetector::new(num_samples))
+    }
+
+    pub fn detect(&mut self, signal: &[f64]) -> Option<HarmonicPitch> {
+        match *self {
+            Self::Marco(ref mut detector) => detector.get_harmonics(signal),
+            Self::Cepstrum(ref mut detector) => detector.get_harmonics(signal),
+        }
+    }
 }

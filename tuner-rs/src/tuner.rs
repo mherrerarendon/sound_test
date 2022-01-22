@@ -1,16 +1,12 @@
 use crate::{
     api::Partial,
-    detectors::{marco_detector, HarmonicDetector},
+    detectors::{marco_detector, Detector, HarmonicDetector},
     TunerError,
 };
-use pitch_detection::detector::PitchDetector;
-use rustfft::{num_complex::Complex, FftPlanner};
-
-const POWER_THRESHOLD: f64 = 5.0;
-const CLARITY_THRESHOLD: f64 = 0.7;
 
 pub struct Tuner {
     optimized_num_samples: usize,
+    detector: Detector,
 }
 
 impl Tuner {
@@ -18,6 +14,7 @@ impl Tuner {
         let optimized_num_samples = Self::optimized_num_samples(num_samples);
         Self {
             optimized_num_samples,
+            detector: Detector::new(optimized_num_samples),
         }
     }
 
@@ -32,14 +29,6 @@ impl Tuner {
         }
     }
 
-    // fn scale_partial(partial: &Partial, num_samples: usize) -> Partial {
-    //     let ratio = SAMPLE_RATE / num_samples as f64;
-    //     Partial {
-    //         freq: (partial.freq as f64 * ratio),
-    //         intensity: partial.intensity * PARTIAL_INTENSITY_SCALING,
-    //     }
-    // }
-
     pub fn detect_pitch(&mut self, byte_buffer: Vec<u8>) -> Result<Vec<Partial>, TunerError> {
         if self.optimized_num_samples > byte_buffer.len() / 2 {
             return Err(TunerError::FftFailed);
@@ -50,26 +39,11 @@ impl Tuner {
             .take(self.optimized_num_samples)
             .map(|a| i16::from_ne_bytes([a[0], a[1]]) as f64)
             .collect();
-        let mut marco_detector = marco_detector::MarcoDetector::new(self.optimized_num_samples);
-        if let Some(harmonics) = marco_detector.get_harmonics(&signal) {
+        if let Some(harmonics) = self.detector.detect(&signal) {
             Ok(harmonics.harmonics.iter().cloned().collect())
         } else {
             Err(TunerError::FftFailed)
         }
-
-        // let fft = self.fft_planner.plan_fft_forward(samples.len());
-
-        // fft.process_with_scratch(&mut samples, &mut self.scratch);
-        // let absolute_values: Vec<(usize, f32)> = samples
-        //     .iter()
-        //     .enumerate()
-        //     .map(|(i, a)| {
-        //         let sum = a.re.powf(2.0) + a.im.powf(2.0);
-        //         (i, (sum as f32).sqrt())
-        //     })
-        //     .collect();
-        // let harmonics =
-        //     HarmonicNote::calc_harmonic_note(&absolute_values).ok_or(TunerError::FftFailed)?;
     }
 }
 

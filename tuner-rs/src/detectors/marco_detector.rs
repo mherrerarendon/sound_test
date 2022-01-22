@@ -13,36 +13,6 @@ pub struct MarcoDetector {
     scratch: Vec<Complex<f64>>,
 }
 
-impl PitchDetector<f64> for MarcoDetector {
-    fn get_pitch(
-        &mut self,
-        signal: &[f64],
-        sample_rate: usize,
-        power_threshold: f64,
-        clarity_threshold: f64,
-    ) -> Option<Pitch<f64>> {
-        assert_eq!(signal.len(), self.scratch.len());
-        let mut planner = FftPlanner::new();
-        let fft = planner.plan_fft_forward(signal.len());
-        self.samples = signal.iter().map(|x| Complex::new(*x, 0.0)).collect();
-
-        fft.process_with_scratch(&mut self.samples, &mut self.scratch);
-        let absolute_values: Vec<(usize, f64)> = self
-            .samples
-            .iter()
-            .enumerate()
-            .map(|(i, a)| {
-                let sum = a.re.powi(2) + a.im.powi(2);
-                (i, sum.sqrt())
-            })
-            .collect();
-        Self::calc_harmonic_note(&absolute_values).map(|harmonic_note| Pitch {
-            frequency: harmonic_note.harmonics[0].freq as f64,
-            clarity: 1.0f64,
-        })
-    }
-}
-
 impl HarmonicDetector<f64> for MarcoDetector {
     fn get_harmonics(&mut self, signal: &[f64]) -> Option<HarmonicPitch> {
         assert_eq!(signal.len(), self.scratch.len());
@@ -65,10 +35,10 @@ impl HarmonicDetector<f64> for MarcoDetector {
 }
 
 impl MarcoDetector {
-    pub fn new(size: usize) -> Self {
+    pub fn new(num_samples: usize) -> Self {
         MarcoDetector {
-            scratch: vec![Complex::zero(); size],
-            samples: vec![Complex::zero(); size],
+            scratch: vec![Complex::zero(); num_samples],
+            samples: vec![Complex::zero(); num_samples],
         }
     }
 
