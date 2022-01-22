@@ -14,7 +14,9 @@ impl Tuner {
         let optimized_num_samples = Self::optimized_num_samples(num_samples);
         Self {
             optimized_num_samples,
-            detector: Detector::new(optimized_num_samples),
+            detector: Detector::from(Detector::MarcoDetector(marco_detector::MarcoDetector::new(
+                optimized_num_samples,
+            ))),
         }
     }
 
@@ -39,7 +41,7 @@ impl Tuner {
             .take(self.optimized_num_samples)
             .map(|a| i16::from_ne_bytes([a[0], a[1]]) as f64)
             .collect();
-        if let Some(harmonics) = self.detector.detect(&signal) {
+        if let Some(harmonics) = self.detector.get_harmonics(&signal) {
             Ok(harmonics.harmonics.iter().cloned().collect())
         } else {
             Err(TunerError::FftFailed)

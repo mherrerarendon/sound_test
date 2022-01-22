@@ -7,6 +7,7 @@ use num_traits::float::FloatCore;
 use crate::{api::Partial, constants::NUM_PARTIALS};
 
 use self::{cepstrum::CepstrumDetector, marco_detector::MarcoDetector};
+use enum_dispatch::enum_dispatch;
 
 #[derive(Debug, Clone)]
 pub struct HarmonicPitch {
@@ -48,30 +49,13 @@ impl HarmonicPitch {
     }
 }
 
-// TODO: Assumes sample rate
-pub trait HarmonicDetector<T>
-where
-    T: FloatCore,
-{
-    fn get_harmonics(&mut self, signal: &[T]) -> Option<HarmonicPitch>;
+#[enum_dispatch]
+pub trait HarmonicDetector {
+    fn get_harmonics(&mut self, signal: &[f64]) -> Option<HarmonicPitch>;
 }
 
-// TODO: use enum dispatch
+#[enum_dispatch(HarmonicDetector)]
 pub enum Detector {
-    Marco(MarcoDetector),
-    Cepstrum(CepstrumDetector),
-}
-
-impl Detector {
-    pub fn new(num_samples: usize) -> Self {
-        // Detector::Marco(MarcoDetector::new(num_samples))
-        Detector::Cepstrum(CepstrumDetector::new(num_samples))
-    }
-
-    pub fn detect(&mut self, signal: &[f64]) -> Option<HarmonicPitch> {
-        match *self {
-            Self::Marco(ref mut detector) => detector.get_harmonics(signal),
-            Self::Cepstrum(ref mut detector) => detector.get_harmonics(signal),
-        }
-    }
+    MarcoDetector,
+    CepstrumDetector,
 }

@@ -11,7 +11,7 @@ pub struct CepstrumDetector {
     scratch: Vec<Complex<f64>>,
 }
 
-impl HarmonicDetector<f64> for CepstrumDetector {
+impl HarmonicDetector for CepstrumDetector {
     fn get_harmonics(&mut self, signal: &[f64]) -> Option<HarmonicPitch> {
         assert_eq!(signal.len(), self.scratch.len());
         let mut planner = FftPlanner::new();
