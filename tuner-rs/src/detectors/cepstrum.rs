@@ -19,7 +19,8 @@ impl HarmonicDetector for CepstrumDetector {
         self.fft = signal.iter().map(|x| Complex::new(*x, 0.0)).collect();
 
         forward_fft.process_with_scratch(&mut self.fft, &mut self.scratch);
-        let cepstrum = self.power_spectrum(&mut planner);
+        let cepstrum = self.complex_spectrum(&mut planner);
+        // let cepstrum = self.power_spectrum(&mut planner);
 
         // Frequency = SAMPLE_RATE / quefrency
         // With this in mind we can ignore the extremes of the power cepstrum
@@ -48,32 +49,22 @@ impl CepstrumDetector {
         }
     }
 
-    fn complex_spectrum(&mut self, planner: &mut FftPlanner<f64>) -> Option<Partial> {
+    fn complex_spectrum(&mut self, planner: &mut FftPlanner<f64>) -> Vec<f64> {
         self.fft = self
             .fft
             .iter()
             .map(|f| {
-                let sum = f.re.powi(2) + f.im.powi(2);
-                Complex::new(sum.sqrt().log(std::f64::consts::E), (f.im / f.re).atan())
+                Complex::new(
+                    (f.re.powi(2) + f.im.powi(2))
+                        .sqrt()
+                        .log(std::f64::consts::E),
+                    (f.im / f.re).atan(),
+                )
             })
             .collect();
         let inverse_fft = planner.plan_fft_inverse(self.scratch.len());
         inverse_fft.process_with_scratch(&mut self.fft, &mut self.scratch);
-        let quefrency =
-            self.fft.iter().enumerate().reduce(
-                |accum, item| {
-                    if item.1.re > accum.1.re {
-                        item
-                    } else {
-                        accum
-                    }
-                },
-            );
-        let fundamental = quefrency.map(|quefrency| Partial {
-            freq: SAMPLE_RATE / quefrency.0 as f64,
-            intensity: quefrency.1.re,
-        });
-        fundamental
+        self.fft.iter().map(|f| f.re).collect()
     }
 
     fn power_spectrum(&mut self, planner: &mut FftPlanner<f64>) -> Vec<f64> {
