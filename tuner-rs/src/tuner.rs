@@ -5,6 +5,38 @@ use crate::{
     TunerError,
 };
 
+use lazy_static::lazy_static; // 1.4.0
+use std::sync::Mutex;
+
+lazy_static! {
+    static ref TUNER: Mutex<Option<Tuner>> = Mutex::new(None);
+}
+
+pub fn tuner_detect_pitch(byte_buffer: &[u8]) -> Result<Vec<Partial>, TunerError> {
+    TUNER
+        .lock()
+        .unwrap()
+        .as_mut()
+        .ok_or(TunerError::TunerNotInitialized)?
+        .detect_pitch(byte_buffer)
+}
+
+pub fn tuner_set_algorithm(algorithm: &str) -> Result<(), TunerError> {
+    let mut guard = TUNER.lock().unwrap();
+    let num_samples = guard
+        .as_ref()
+        .ok_or(TunerError::TunerNotInitialized)?
+        .optimized_num_samples();
+
+    *guard = Some(Tuner::new(num_samples, algorithm));
+    Ok(())
+}
+
+pub fn tuner_init(algorithm: &str, num_samples: usize) {
+    let mut guard = TUNER.lock().unwrap();
+    *guard = Some(Tuner::new(num_samples, algorithm));
+}
+
 pub struct Tuner {
     optimized_num_samples: usize,
     detector: Detector,
@@ -12,7 +44,7 @@ pub struct Tuner {
 
 impl Tuner {
     pub fn new(num_samples: usize, algorithm: &str) -> Self {
-        let optimized_num_samples = Self::optimized_num_samples(num_samples);
+        let optimized_num_samples = Self::calc_optimized_num_samples(num_samples);
         Self {
             optimized_num_samples,
             detector: match algorithm {
@@ -27,7 +59,11 @@ impl Tuner {
         }
     }
 
-    fn optimized_num_samples(num_samples: usize) -> usize {
+    fn optimized_num_samples(&self) -> usize {
+        self.optimized_num_samples
+    }
+
+    fn calc_optimized_num_samples(num_samples: usize) -> usize {
         let mut optimized_sum_samples = (2 as usize).pow(14);
         loop {
             if optimized_sum_samples > num_samples {
@@ -38,7 +74,7 @@ impl Tuner {
         }
     }
 
-    pub fn detect_pitch(&mut self, byte_buffer: Vec<u8>) -> Result<Vec<Partial>, TunerError> {
+    pub fn detect_pitch(&mut self, byte_buffer: &[u8]) -> Result<Vec<Partial>, TunerError> {
         if self.optimized_num_samples > byte_buffer.len() / 2 {
             return Err(TunerError::FftFailed);
         }
@@ -71,5 +107,34 @@ impl Tuner {
             }
             _ => Err(TunerError::UnknownAlgorithm),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use float_cmp::ApproxEq;
+    use serde::Deserialize;
+    #[derive(Deserialize)]
+    struct SampleData {
+        data: Option<Vec<u8>>,
+    }
+
+    #[test]
+    fn global_tuner() -> anyhow::Result<()> {
+        let mut sample_data: SampleData =
+            serde_json::from_str(include_str!("../test_data/tuner_c5.json"))?;
+        let buffer = sample_data.data.take().unwrap();
+
+        tuner_init(MARCO_ALGORITHM, buffer.len() / 2);
+        let partials = tuner_detect_pitch(&buffer)?;
+        assert!(partials[0].freq.approx_eq(523.68, (0.02, 2)));
+        assert!(partials[1].freq.approx_eq(1047.36, (0.02, 2)));
+
+        tuner_set_algorithm(CEPSTRUM_ALGORITHM)?;
+        let partials = tuner_detect_pitch(&buffer)?;
+        assert!(partials[0].freq.approx_eq(517.647, (0.02, 2)));
+
+        Ok(())
     }
 }

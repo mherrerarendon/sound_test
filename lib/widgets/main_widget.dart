@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sound_test/widgets/listen_widget.dart';
 import 'package:sound_test/widgets/pitch_slider.dart';
 import 'package:sound_test/widgets/all_partials.dart';
+import 'package:sound_test/widgets/drawer_widget.dart';
 
 class MainWidget extends StatefulWidget {
   const MainWidget({Key? key}) : super(key: key);
@@ -29,6 +30,7 @@ class _MainWidgetState extends State<MainWidget> {
       appBar: AppBar(
         title: const Text('Sound Test'),
       ),
+      drawer: AppDrawer(),
       body: makeBody(),
       floatingActionButton: const ListenWidget(),
     );

@@ -13,6 +13,10 @@ const int tBitRate = tSampleRate * tNumChannels * tBitsPerSample;
 const double tMinIntensity = 5000.0;
 const double tMaxFrequency = 4186.0;
 const double tMinFrequency = 27.5;
+
+// I didn't find a way to set the buffer size, but this seems to be the default
+const int tBufferSize = 35200;
+
 typedef _Fn = void Function();
 
 class ListenWidget extends StatefulWidget {
@@ -32,12 +36,15 @@ class _ListenWidgetState extends State<ListenWidget> {
 
   Future<void> _openRecorder() async {
     await _mRecorder!.openAudioSession();
+    await _tuner.initTuner(
+        algorithm: "marco", numSamples: (tBufferSize / 2).round());
     var recordingDataController = StreamController<Food>();
     _mRecordingDataSubscription =
         recordingDataController.stream.listen((buffer) async {
       if (buffer is FoodData) {
         try {
-          final harmonicPartials = await _tuner.fft(byteBuffer: buffer.data!);
+          final harmonicPartials =
+              await _tuner.detectPitch(byteBuffer: buffer.data!);
           final fundamental = harmonicPartials[0];
           if (fundamental.intensity > tMinIntensity &&
               fundamental.freq > tMinFrequency &&

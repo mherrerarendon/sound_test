@@ -9,7 +9,7 @@ const kA4Freq = 440.0;
 const kMaxCentsOffset = 15.0;
 
 class PartialsModel extends ChangeNotifier {
-  List<Partial> _partials = [Partial(freq: 0.0, intensity: 0.0)];
+  List<Partial> _partials = [Partial(freq: 1.0, intensity: 1.0)];
 
   double get freq => _partials.first.freq;
   double get intensity => _partials.first.intensity;

@@ -8,6 +8,7 @@ mod tuner;
 pub enum TunerError {
     FftFailed,
     UnknownAlgorithm,
+    TunerNotInitialized,
 }
 
 impl std::fmt::Display for TunerError {
