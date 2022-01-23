@@ -1,7 +1,7 @@
 use crate::{
     api::Partial,
-    constants::{MAX_FREQ, MIN_FREQ, SAMPLE_RATE},
-    detectors::{HarmonicDetector, HarmonicPitch},
+    constants::{MAX_FREQ, MIN_FREQ, NUM_FUNDAMENTALS, SAMPLE_RATE},
+    detectors::{FundamentalDetector, TopFundamentals},
 };
 use num_traits::Zero;
 use rustfft::{num_complex::Complex, FftPlanner};
@@ -13,8 +13,8 @@ pub struct CepstrumDetector {
     scratch: Vec<Complex<f64>>,
 }
 
-impl HarmonicDetector for CepstrumDetector {
-    fn get_harmonics(&mut self, signal: &[f64]) -> Option<HarmonicPitch> {
+impl FundamentalDetector for CepstrumDetector {
+    fn get_top_fundamentals(&mut self, signal: &[f64]) -> TopFundamentals {
         assert_eq!(signal.len(), self.scratch.len());
         let mut planner = FftPlanner::new();
         let forward_fft = planner.plan_fft_forward(signal.len());
@@ -31,17 +31,28 @@ impl HarmonicDetector for CepstrumDetector {
         // https://en.wikipedia.org/wiki/Cepstrum
         let lower_limit = (SAMPLE_RATE / MAX_FREQ).round() as usize;
         let upper_limit = (SAMPLE_RATE / MIN_FREQ).round() as usize;
-        let quefrency = cepstrum
+        let mut partials: Vec<Partial> = cepstrum
             .iter()
             .skip(lower_limit)
             .take(upper_limit - lower_limit)
             .enumerate()
-            .reduce(|accum, item| if item.1 > accum.1 { item } else { accum });
-        let fundamental = quefrency.map(|quefrency| Partial {
-            freq: SAMPLE_RATE / (quefrency.0 as f64 + lower_limit as f64) as f64,
-            intensity: *quefrency.1,
-        });
-        fundamental.map(|partial| HarmonicPitch::new(partial))
+            .map(|(quefrency, intensity)| Partial {
+                freq: SAMPLE_RATE / (quefrency as f64 + lower_limit as f64) as f64,
+                intensity: *intensity,
+            })
+            .collect();
+        partials.sort_by(|a, b| b.intensity.partial_cmp(&a.intensity).unwrap());
+        partials.into_iter().take(NUM_FUNDAMENTALS).collect()
+        // let quefrency =
+        //     quefrencies
+        //         .iter()
+        //         .enumerate()
+        //         .reduce(|accum, item| if item.1 > accum.1 { item } else { accum });
+        // let fundamental = quefrency.map(|quefrency| Partial {
+        //     freq: SAMPLE_RATE / (quefrency.0 as f64 + lower_limit as f64) as f64,
+        //     intensity: *quefrency.1,
+        // });
+        // fundamental.map(|partial| TopFundamentals::new(partial))
     }
 }
 

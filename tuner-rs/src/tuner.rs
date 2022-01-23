@@ -1,7 +1,8 @@
 use crate::{
     api::Partial,
     constants::{CEPSTRUM_ALGORITHM, MARCO_ALGORITHM},
-    detectors::{cepstrum, marco_detector, Detector, HarmonicDetector},
+    detectors::{cepstrum, marco_detector, Detector, FundamentalDetector},
+    tuner_history::TunerFilter,
     TunerError,
 };
 
@@ -40,6 +41,7 @@ pub fn tuner_init(algorithm: &str, num_samples: usize) {
 pub struct Tuner {
     optimized_num_samples: usize,
     detector: Detector,
+    filter: TunerFilter,
 }
 
 impl Tuner {
@@ -56,6 +58,7 @@ impl Tuner {
                 )),
                 _ => panic!("Invalid algorithm"),
             },
+            filter: TunerFilter::new(),
         }
     }
 
@@ -84,11 +87,17 @@ impl Tuner {
             .take(self.optimized_num_samples)
             .map(|a| i16::from_ne_bytes([a[0], a[1]]) as f64)
             .collect();
-        if let Some(harmonics) = self.detector.get_harmonics(&signal) {
-            Ok(harmonics.harmonics.iter().cloned().collect())
-        } else {
-            Err(TunerError::FftFailed)
-        }
+        let top_fundamentals = self.detector.get_top_fundamentals(&signal);
+        let best_fundamental = match top_fundamentals
+            .partials()
+            .iter()
+            .find(|partial| self.filter.within_range(partial.freq))
+        {
+            Some(partial) => partial,
+            None => top_fundamentals.partials().first().unwrap(),
+        };
+        self.filter.add_freq(best_fundamental.freq);
+        Ok(vec![best_fundamental.clone()])
     }
 
     pub fn set_algorithm(&mut self, algorithm: &str) -> Result<(), TunerError> {
@@ -129,7 +138,6 @@ mod tests {
         tuner_init(MARCO_ALGORITHM, buffer.len() / 2);
         let partials = tuner_detect_pitch(&buffer)?;
         assert!(partials[0].freq.approx_eq(523.68, (0.02, 2)));
-        assert!(partials[1].freq.approx_eq(1047.36, (0.02, 2)));
 
         tuner_set_algorithm(CEPSTRUM_ALGORITHM)?;
         let partials = tuner_detect_pitch(&buffer)?;

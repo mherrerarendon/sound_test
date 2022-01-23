@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sound_test/widgets/algorithm_button.dart';
 import 'package:sound_test/widgets/listen_widget.dart';
 import 'package:sound_test/widgets/pitch_slider.dart';
 import 'package:sound_test/widgets/all_partials.dart';
@@ -18,6 +19,10 @@ class _MainWidgetState extends State<MainWidget> {
     Widget makeBody() {
       return Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: const AlgorithmButton(),
+          ),
           const SizedBox(height: 20),
           PitchSlider(),
           const SizedBox(height: 20),

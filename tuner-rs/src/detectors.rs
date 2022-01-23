@@ -4,20 +4,26 @@ pub mod marco_detector;
 use float_cmp::ApproxEq;
 use num_traits::float::FloatCore;
 
-use crate::{api::Partial, constants::NUM_PARTIALS};
+use crate::{api::Partial, constants::NUM_FUNDAMENTALS};
 
 use self::{cepstrum::CepstrumDetector, marco_detector::MarcoDetector};
 use enum_dispatch::enum_dispatch;
 
-#[derive(Debug, Clone)]
-pub struct HarmonicPitch {
-    pub harmonics: [Partial; NUM_PARTIALS],
+pub struct TopFundamentals {
+    partials: [Partial; NUM_FUNDAMENTALS],
 }
 
-impl Default for HarmonicPitch {
+impl TopFundamentals {
+    pub fn partials(&self) -> &[Partial] {
+        &self.partials
+    }
+}
+
+impl Default for TopFundamentals {
     fn default() -> Self {
-        HarmonicPitch {
-            harmonics: [
+        assert_eq!(NUM_FUNDAMENTALS, 5);
+        TopFundamentals {
+            partials: [
                 Partial::default(),
                 Partial::default(),
                 Partial::default(),
@@ -28,33 +34,24 @@ impl Default for HarmonicPitch {
     }
 }
 
-impl HarmonicPitch {
-    fn absolute_intensity(&self) -> i64 {
-        self.harmonics
-            .iter()
-            .fold(0i64, |accum, item| accum + item.intensity.round() as i64)
-    }
+impl FromIterator<Partial> for TopFundamentals {
+    fn from_iter<I: IntoIterator<Item = Partial>>(iter: I) -> Self {
+        let mut top_fundamentals = TopFundamentals::default();
 
-    fn new(fundamental: Partial) -> Self {
-        let mut note = HarmonicPitch::default();
-        note.harmonics[0] = fundamental;
-        note
-    }
+        for (idx, partial) in iter.into_iter().take(NUM_FUNDAMENTALS).enumerate() {
+            top_fundamentals.partials[idx] = partial;
+        }
 
-    fn is_harmonic(&self) -> bool {
-        self.harmonics
-            .iter()
-            .skip(1)
-            .any(|partial| partial.freq.approx_eq(0.0, (0.02, 2)))
+        top_fundamentals
     }
 }
 
 #[enum_dispatch]
-pub trait HarmonicDetector {
-    fn get_harmonics(&mut self, signal: &[f64]) -> Option<HarmonicPitch>;
+pub trait FundamentalDetector {
+    fn get_top_fundamentals(&mut self, signal: &[f64]) -> TopFundamentals;
 }
 
-#[enum_dispatch(HarmonicDetector)]
+#[enum_dispatch(FundamentalDetector)]
 pub enum Detector {
     MarcoDetector,
     CepstrumDetector,

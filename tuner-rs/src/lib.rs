@@ -3,6 +3,7 @@ mod bridge_generated; /* AUTO INJECTED BY flutter_rust_bridge. This line may not
 mod constants;
 mod detectors;
 mod tuner;
+mod tuner_history;
 
 #[derive(Debug)]
 pub enum TunerError {

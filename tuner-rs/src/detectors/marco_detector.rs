@@ -1,20 +1,62 @@
 use crate::{
     api::Partial,
-    constants::{MAX_FREQ, PARTIAL_INTENSITY_SCALING, SAMPLE_RATE},
-    detectors::{HarmonicDetector, HarmonicPitch},
+    constants::{MAX_FREQ, NUM_FUNDAMENTALS, PARTIAL_INTENSITY_SCALING, SAMPLE_RATE},
+    detectors::{FundamentalDetector, TopFundamentals},
 };
 use float_cmp::ApproxEq;
 use num_traits::Zero;
 use pitch_detection::detector::{internals::Pitch, PitchDetector};
 use rustfft::{num_complex::Complex, FftPlanner};
 
+pub const NUM_PARTIALS: usize = 5;
+
+#[derive(Debug, Clone)]
+pub struct HarmonicPitch {
+    pub harmonics: [Partial; NUM_PARTIALS],
+}
+
+impl Default for HarmonicPitch {
+    fn default() -> Self {
+        assert_eq!(NUM_PARTIALS, 5);
+        HarmonicPitch {
+            harmonics: [
+                Partial::default(),
+                Partial::default(),
+                Partial::default(),
+                Partial::default(),
+                Partial::default(),
+            ],
+        }
+    }
+}
+
+impl HarmonicPitch {
+    fn absolute_intensity(&self) -> i64 {
+        self.harmonics
+            .iter()
+            .fold(0i64, |accum, item| accum + item.intensity.round() as i64)
+    }
+
+    fn new(fundamental: Partial) -> Self {
+        let mut note = HarmonicPitch::default();
+        note.harmonics[0] = fundamental;
+        note
+    }
+
+    fn is_harmonic(&self) -> bool {
+        self.harmonics
+            .iter()
+            .skip(1)
+            .any(|partial| partial.freq.approx_eq(0.0, (0.02, 2)))
+    }
+}
 pub struct MarcoDetector {
     samples: Vec<Complex<f64>>,
     scratch: Vec<Complex<f64>>,
 }
 
-impl HarmonicDetector for MarcoDetector {
-    fn get_harmonics(&mut self, signal: &[f64]) -> Option<HarmonicPitch> {
+impl FundamentalDetector for MarcoDetector {
+    fn get_top_fundamentals(&mut self, signal: &[f64]) -> TopFundamentals {
         assert_eq!(signal.len(), self.scratch.len());
         let mut planner = FftPlanner::new();
         let fft = planner.plan_fft_forward(signal.len());
@@ -30,7 +72,7 @@ impl HarmonicDetector for MarcoDetector {
                 (i, sum.sqrt())
             })
             .collect();
-        Self::calc_harmonic_note(&absolute_values)
+        Self::calc_top_fundamentals(&absolute_values)
     }
 }
 
@@ -42,19 +84,34 @@ impl MarcoDetector {
         }
     }
 
-    pub fn calc_harmonic_note(absolute_values: &[(usize, f64)]) -> Option<HarmonicPitch> {
+    fn calc_top_fundamentals(absolute_values: &[(usize, f64)]) -> TopFundamentals {
         let highest_intensity_partials =
             Self::scaled_and_ordered_highest_intensity_partials(absolute_values);
         let mut harmonic_notes = Self::decompose_into_notes(&highest_intensity_partials);
-        harmonic_notes.sort_by_key(|note| note.harmonics[0].freq.round() as i32);
-        harmonic_notes.sort_by(|a, b| b.absolute_intensity().cmp(&a.absolute_intensity()));
-        harmonic_notes.into_iter().nth(0)
+        harmonic_notes.sort_by(|a, b| {
+            a.harmonics[0]
+                .freq
+                .partial_cmp(&b.harmonics[0].freq)
+                .unwrap()
+        });
+        harmonic_notes.sort_by(|a, b| {
+            b.absolute_intensity()
+                .partial_cmp(&a.absolute_intensity())
+                .unwrap()
+        });
+        harmonic_notes
+            .into_iter()
+            .map(|note| Partial {
+                freq: note.harmonics[0].freq,
+                intensity: note.absolute_intensity() as f64,
+            })
+            .collect()
     }
 
     fn scale_partial(partial: &Partial, num_samples: usize) -> Partial {
         let ratio = SAMPLE_RATE / num_samples as f64;
         Partial {
-            freq: (partial.freq as f64 * ratio),
+            freq: ((partial.freq /*- 1.0*/ as f64) * ratio), // https://wiki.analytica.com/FFT substracts 1?
             intensity: partial.intensity * PARTIAL_INTENSITY_SCALING,
         }
     }
@@ -147,7 +204,7 @@ mod tests {
         let mut tuner = Tuner::new(buffer.len() / 2, MARCO_ALGORITHM);
         let partials = tuner.detect_pitch(&buffer)?;
         assert!(partials[0].freq.approx_eq(40.28, (0.02, 2)));
-        assert!(partials[2].freq.approx_eq(120.849, (0.02, 2)));
+        // assert!(partials[2].freq.approx_eq(120.849, (0.02, 2)));
         Ok(())
     }
 
@@ -159,7 +216,7 @@ mod tests {
         let mut tuner = Tuner::new(buffer.len() / 2, MARCO_ALGORITHM);
         let partials = tuner.detect_pitch(&buffer)?;
         assert!(partials[0].freq.approx_eq(523.68, (0.02, 2)));
-        assert!(partials[1].freq.approx_eq(1047.36, (0.02, 2)));
+        // assert!(partials[1].freq.approx_eq(1047.36, (0.02, 2)));
         Ok(())
     }
 
@@ -171,8 +228,8 @@ mod tests {
         let mut tuner = Tuner::new(buffer.len() / 2, MARCO_ALGORITHM);
         let partials = tuner.detect_pitch(&buffer)?;
         assert!(partials[0].freq.approx_eq(220.21, (0.02, 2)));
-        assert!(partials[1].freq.approx_eq(440.43, (0.02, 2)));
-        assert!(partials[3].freq.approx_eq(880.86, (0.02, 2)));
+        // assert!(partials[1].freq.approx_eq(440.43, (0.02, 2)));
+        // assert!(partials[3].freq.approx_eq(880.86, (0.02, 2)));
         Ok(())
     }
 
@@ -184,7 +241,7 @@ mod tests {
         let mut tuner = Tuner::new(buffer.len() / 2, MARCO_ALGORITHM);
         let fft_peak = tuner.detect_pitch(&buffer)?;
         assert!(fft_peak[0].freq.approx_eq(147.705, (0.02, 2)));
-        assert!(fft_peak[1].freq.approx_eq(295.41, (0.02, 2)));
+        // assert!(fft_peak[1].freq.approx_eq(295.41, (0.02, 2)));
         Ok(())
     }
 
@@ -196,9 +253,9 @@ mod tests {
         let mut tuner = Tuner::new(buffer.len() / 2, MARCO_ALGORITHM);
         let fft_peak = tuner.detect_pitch(&buffer)?;
         assert!(fft_peak[0].freq.approx_eq(96.68, (0.02, 2)));
-        assert!(fft_peak[1].freq.approx_eq(193.36, (0.02, 2)));
-        assert!(fft_peak[2].freq.approx_eq(290.04, (0.02, 2)));
-        assert!(fft_peak[3].freq.approx_eq(386.72, (0.02, 2)));
+        // assert!(fft_peak[1].freq.approx_eq(193.36, (0.02, 2)));
+        // assert!(fft_peak[2].freq.approx_eq(290.04, (0.02, 2)));
+        // assert!(fft_peak[3].freq.approx_eq(386.72, (0.02, 2)));
         Ok(())
     }
 
@@ -210,9 +267,9 @@ mod tests {
         let mut tuner = Tuner::new(buffer.len() / 2, MARCO_ALGORITHM);
         let fft_peak = tuner.detect_pitch(&buffer)?;
         assert!(fft_peak[0].freq.approx_eq(64.45, (0.02, 2)));
-        assert!(fft_peak[1].freq.approx_eq(128.91, (0.02, 2)));
-        assert!(fft_peak[2].freq.approx_eq(193.34, (0.02, 2)));
-        assert!(fft_peak[3].freq.approx_eq(257.81, (0.02, 2)));
+        // assert!(fft_peak[1].freq.approx_eq(128.91, (0.02, 2)));
+        // assert!(fft_peak[2].freq.approx_eq(193.34, (0.02, 2)));
+        // assert!(fft_peak[3].freq.approx_eq(257.81, (0.02, 2)));
         Ok(())
     }
 }
