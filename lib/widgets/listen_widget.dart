@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'dart:ffi';
 import 'package:flutter_sound/flutter_sound.dart';
-import 'package:sound_test/api.dart';
 import 'package:flutter/material.dart';
 import 'package:sound_test/models/partials_model.dart';
+import 'package:sound_test/models/settings_model.dart';
+import 'package:sound_test/widgets/tuner_inhereted_widget.dart';
 import 'package:provider/provider.dart';
 
 const int tSampleRate = 44000;
@@ -32,19 +32,23 @@ class _ListenWidgetState extends State<ListenWidget> {
   FlutterSoundRecorder? _mRecorder = FlutterSoundRecorder();
   bool _mRecorderIsInited = false;
   StreamSubscription? _mRecordingDataSubscription;
-  final _tuner = TunerRs(DynamicLibrary.process());
 
   Future<void> _openRecorder() async {
     await _mRecorder!.openAudioSession();
-    await _tuner.initTuner(
-        algorithm: "marco", numSamples: (tBufferSize / 2).round());
+    final tuner = TunerInherited.of(context)!.tunerApi;
+    final detectionAlgorithm =
+        Provider.of<SettingsModel>(context, listen: false)
+            .detectionAlgorithm
+            .toShortString();
+    await tuner.initTuner(
+        algorithm: detectionAlgorithm, numSamples: (tBufferSize / 2).round());
     var recordingDataController = StreamController<Food>();
     _mRecordingDataSubscription =
         recordingDataController.stream.listen((buffer) async {
       if (buffer is FoodData) {
         try {
           final harmonicPartials =
-              await _tuner.detectPitch(byteBuffer: buffer.data!);
+              await tuner.detectPitch(byteBuffer: buffer.data!);
           final fundamental = harmonicPartials[0];
           if (fundamental.intensity > tMinIntensity &&
               fundamental.freq > tMinFrequency &&
