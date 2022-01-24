@@ -122,16 +122,16 @@ mod tests {
     #[test]
     fn global_tuner() -> anyhow::Result<()> {
         let mut sample_data: SampleData =
-            serde_json::from_str(include_str!("../test_data/tuner_c5.json"))?;
+            serde_json::from_str(include_str!("../test_data/cello_open_a.json"))?;
         let buffer = sample_data.data.take().unwrap();
 
         tuner_init(MARCO_ALGORITHM, buffer.len() / 2);
         let partials = tuner_detect_pitch(&buffer)?;
-        assert!(partials[0].freq.approx_eq(523.68, (0.02, 2)));
+        assert!(partials[0].freq.approx_eq(219.543, (0.02, 2)));
 
         tuner_set_algorithm(CEPSTRUM_ALGORITHM)?;
         let partials = tuner_detect_pitch(&buffer)?;
-        assert!(partials[0].freq.approx_eq(517.647, (0.02, 2)));
+        assert!(partials[0].freq.approx_eq(218.905, (0.02, 2)));
 
         Ok(())
     }

@@ -1,4 +1,5 @@
 pub mod cepstrum;
+mod fft_space;
 pub mod marco_detector;
 
 use crate::{api::Partial, constants::NUM_FUNDAMENTALS};

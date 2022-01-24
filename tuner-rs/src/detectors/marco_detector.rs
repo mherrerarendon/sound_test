@@ -1,7 +1,7 @@
 use crate::{
     api::Partial,
     constants::{MAX_FREQ, PARTIAL_INTENSITY_SCALING, SAMPLE_RATE},
-    detectors::{FundamentalDetector, TopFundamentals},
+    detectors::{fft_space::FftSpace, FundamentalDetector, TopFundamentals},
 };
 use float_cmp::ApproxEq;
 use num_traits::Zero;
@@ -50,21 +50,21 @@ impl HarmonicPitch {
     }
 }
 pub struct MarcoDetector {
-    fft_space: Vec<Complex<f64>>,
-    scratch: Vec<Complex<f64>>,
+    fft_space: FftSpace,
 }
 
 impl FundamentalDetector for MarcoDetector {
     fn get_top_fundamentals(&mut self, signal: &[f64]) -> TopFundamentals {
         let mut planner = FftPlanner::new();
         let fft = planner.plan_fft_forward(self.fft_space.len());
-        self.init_fft_space(signal);
+        self.fft_space.init_fft_space(signal);
 
-        fft.process_with_scratch(&mut self.fft_space, &mut self.scratch);
+        let (fft_space, scratch) = self.fft_space.workspace();
+        fft.process_with_scratch(fft_space, scratch);
         let absolute_values: Vec<f64> = self
             .fft_space
-            .iter()
-            .map(|fft| (fft.re.powi(2) + fft.im.powi(2)).sqrt())
+            .freq_domain(true)
+            .map(|(freq, _)| freq)
             .collect();
         self.calc_top_fundamentals(&absolute_values)
     }
@@ -73,23 +73,8 @@ impl FundamentalDetector for MarcoDetector {
 impl MarcoDetector {
     pub fn new(fft_space_size: usize) -> Self {
         MarcoDetector {
-            scratch: vec![Complex::zero(); fft_space_size],
-            fft_space: vec![Complex::zero(); fft_space_size],
+            fft_space: FftSpace::new(fft_space_size),
         }
-    }
-
-    fn init_fft_space(&mut self, signal: &[f64]) {
-        assert!(signal.len() <= self.fft_space.len());
-        signal
-            .iter()
-            .zip(self.fft_space.iter_mut())
-            .for_each(|(sample, fft)| {
-                fft.re = *sample;
-                fft.im = 0.0;
-            });
-        self.fft_space[signal.len()..]
-            .iter_mut()
-            .for_each(|o| *o = Complex::zero())
     }
 
     fn calc_top_fundamentals(&self, absolute_values: &[f64]) -> TopFundamentals {
