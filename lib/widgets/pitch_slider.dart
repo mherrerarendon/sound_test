@@ -48,7 +48,7 @@ class PitchSlider extends StatelessWidget {
               ),
             ),
           ),
-          Container(
+          SizedBox(
             height: kCellHeight,
             child: Center(
               child: MediaQuery.removePadding(
@@ -88,7 +88,7 @@ class PitchSlider extends StatelessWidget {
               ),
             ),
           ),
-          Container(
+          SizedBox(
             height: kCellHeight,
             child: Center(
               child: MediaQuery.removePadding(

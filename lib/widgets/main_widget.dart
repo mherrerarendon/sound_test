@@ -34,13 +34,12 @@ class _MainWidgetState extends State<MainWidget> {
       appBar: AppBar(
         title: const Text('Sound Test'),
       ),
-      // drawer: const AppDrawer(),
       body: makeBody(),
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        child: Container(
+      bottomNavigationBar: const BottomAppBar(
+        shape: CircularNotchedRectangle(),
+        child: SizedBox(
           height: 120.0,
-          child: const Padding(
+          child: Padding(
             padding: EdgeInsets.only(top: 30.0),
             child: AlgorithmButton(),
           ),
