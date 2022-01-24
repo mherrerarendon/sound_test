@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:sound_test/models/settings_model.dart';
 import 'package:sound_test/widgets/algorithm_button.dart';
 
 class AppDrawer extends StatelessWidget {
@@ -11,9 +9,9 @@ class AppDrawer extends StatelessWidget {
     return Drawer(
         child: ListView(
       padding: EdgeInsets.zero,
-      children: <Widget>[
+      children: const <Widget>[
         DrawerHeader(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: Colors.blue,
           ),
           child: AlgorithmButton(),

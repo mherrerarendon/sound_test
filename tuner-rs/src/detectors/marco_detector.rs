@@ -1,11 +1,10 @@
 use crate::{
     api::Partial,
-    constants::{MAX_FREQ, NUM_FUNDAMENTALS, PARTIAL_INTENSITY_SCALING, SAMPLE_RATE},
+    constants::{MAX_FREQ, PARTIAL_INTENSITY_SCALING, SAMPLE_RATE},
     detectors::{FundamentalDetector, TopFundamentals},
 };
 use float_cmp::ApproxEq;
 use num_traits::Zero;
-use pitch_detection::detector::{internals::Pitch, PitchDetector};
 use rustfft::{num_complex::Complex, FftPlanner};
 
 pub const NUM_PARTIALS: usize = 5;

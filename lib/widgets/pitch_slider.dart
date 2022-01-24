@@ -5,22 +5,8 @@ import 'package:provider/provider.dart';
 const kCellWidth = 80.0;
 const kCellHeight = 30.0;
 const kNumCells = 12 * 8 + 2; // Notes in regular piano
+const kInTuneWidth = kMaxCentsOffset * 2 / 100 * kCellWidth;
 
-const kNotes = [
-  'A',
-  'A#',
-  'B',
-  'C',
-  'C#',
-  'D',
-  'D#',
-  'E',
-  'F',
-  'F#',
-  'G',
-  'G#',
-];
-const kA4Index = 12 * 4;
 const kA4ScrollOffset = kA4Index * kCellWidth;
 
 class PitchSlider extends StatelessWidget {
@@ -55,8 +41,10 @@ class PitchSlider extends StatelessWidget {
               alignment: Alignment.center,
               child: Container(
                 height: 10.0,
-                width: 10,
-                color: Theme.of(context).colorScheme.primaryVariant,
+                width: kInTuneWidth,
+                color: fftPeakModel.inTune()
+                    ? Theme.of(context).colorScheme.onSurface
+                    : Colors.grey,
               ),
             ),
           ),

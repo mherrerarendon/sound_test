@@ -1,9 +1,6 @@
 pub mod cepstrum;
 pub mod marco_detector;
 
-use float_cmp::ApproxEq;
-use num_traits::float::FloatCore;
-
 use crate::{api::Partial, constants::NUM_FUNDAMENTALS};
 
 use self::{cepstrum::CepstrumDetector, marco_detector::MarcoDetector};

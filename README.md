@@ -1,6 +1,11 @@
 # sound_test
 
 A new Flutter project.
+TODO:
+Settings:
+Ignore low frequencies checkbox
+remember algorithm preference
+cents threshold
 
 ## Getting Started
 

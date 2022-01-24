@@ -50,9 +50,9 @@ class _ListenWidgetState extends State<ListenWidget> {
           final harmonicPartials =
               await tuner.detectPitch(byteBuffer: buffer.data!);
           final fundamental = harmonicPartials[0];
-          if (fundamental.intensity > tMinIntensity &&
+          if (/*fundamental.intensity > tMinIntensity && */
               fundamental.freq > tMinFrequency &&
-              fundamental.freq < tMaxFrequency) {
+                  fundamental.freq < tMaxFrequency) {
             Provider.of<PartialsModel>(context, listen: false)
                 .setNewPartials(harmonicPartials);
           }
@@ -108,6 +108,7 @@ class _ListenWidgetState extends State<ListenWidget> {
   Widget build(BuildContext context) {
     return FloatingActionButton(
       onPressed: getRecorderFn(),
+      tooltip: _mRecorder!.isRecording ? 'Listening...' : 'Not listening...',
       child: Icon(
           _mRecorder!.isRecording ? Icons.mic_outlined : Icons.mic_off_sharp),
     );

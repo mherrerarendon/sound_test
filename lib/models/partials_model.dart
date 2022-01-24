@@ -8,6 +8,22 @@ const kA4Freq = 440.0;
 // 15 cents (Noticable pitch difference starts at around 10-25 cents)
 const kMaxCentsOffset = 15.0;
 
+const kNotes = [
+  'A',
+  'A#',
+  'B',
+  'C',
+  'C#',
+  'D',
+  'D#',
+  'E',
+  'F',
+  'F#',
+  'G',
+  'G#',
+];
+const kA4Index = 12 * 4;
+
 class PartialsModel extends ChangeNotifier {
   List<Partial> _partials = [Partial(freq: 1.0, intensity: 1.0)];
 
@@ -16,12 +32,13 @@ class PartialsModel extends ChangeNotifier {
   int get numPartials => _partials.length;
 
   double get stepsFromA4 => 12 * log(freq / kA4Freq) / log(2);
+  String get noteName =>
+      kNotes[((stepsFromA4 + 4 * 12).round() % 12.0).toInt()];
+  double get centsOffset => (stepsFromA4 - stepsFromA4.round()) * 100;
 
   bool inTune() {
-    final stepsFromA4 = this.stepsFromA4;
-    final int closestNote = stepsFromA4.round();
-    final double centsOffset = ((stepsFromA4 - closestNote) * 100.0).abs();
-    return (centsOffset < kMaxCentsOffset);
+    final double absoluteCentsOffset = centsOffset.abs();
+    return (absoluteCentsOffset < kMaxCentsOffset);
   }
 
   void setNewPartials(List<Partial> partials) {

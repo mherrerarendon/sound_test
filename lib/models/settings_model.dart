@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 enum DetectionAlgorithm {
-  Marco,
-  Cepstrum,
+  marco,
+  cepstrum,
 }
 
 extension ParseToString on DetectionAlgorithm {
@@ -30,7 +30,7 @@ extension ParseToString on DetectionAlgorithm {
 }
 
 class SettingsModel extends ChangeNotifier {
-  DetectionAlgorithm _detectionAlgorithm = DetectionAlgorithm.Marco;
+  DetectionAlgorithm _detectionAlgorithm = DetectionAlgorithm.marco;
 
   DetectionAlgorithm get detectionAlgorithm => _detectionAlgorithm;
   void setDetectionAlgorithm(DetectionAlgorithm value) {

@@ -43,16 +43,6 @@ impl FundamentalDetector for CepstrumDetector {
             .collect();
         partials.sort_by(|a, b| b.intensity.partial_cmp(&a.intensity).unwrap());
         partials.into_iter().take(NUM_FUNDAMENTALS).collect()
-        // let quefrency =
-        //     quefrencies
-        //         .iter()
-        //         .enumerate()
-        //         .reduce(|accum, item| if item.1 > accum.1 { item } else { accum });
-        // let fundamental = quefrency.map(|quefrency| Partial {
-        //     freq: SAMPLE_RATE / (quefrency.0 as f64 + lower_limit as f64) as f64,
-        //     intensity: *quefrency.1,
-        // });
-        // fundamental.map(|partial| TopFundamentals::new(partial))
     }
 }
 

@@ -31,7 +31,7 @@ class AlgorithmButton extends StatelessWidget {
             _pushSelectAlgorithm(context);
           },
           style: TextButton.styleFrom(
-            primary: Colors.white,
+            primary: Theme.of(context).colorScheme.onSurface,
             // primary: Theme.of(context).colorScheme.onSurface,
             onSurface: Colors.black,
             // minimumSize: Size(88, 36),

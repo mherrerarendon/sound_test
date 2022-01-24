@@ -2,11 +2,11 @@ use crate::{
     api::Partial,
     constants::{CEPSTRUM_ALGORITHM, MARCO_ALGORITHM},
     detectors::{cepstrum, marco_detector, Detector, FundamentalDetector},
-    tuner_history::TunerFilter,
+    tuner_filter::TunerFilter,
     TunerError,
 };
 
-use lazy_static::lazy_static; // 1.4.0
+use lazy_static::lazy_static;
 use std::sync::Mutex;
 
 lazy_static! {
@@ -23,14 +23,12 @@ pub fn tuner_detect_pitch(byte_buffer: &[u8]) -> Result<Vec<Partial>, TunerError
 }
 
 pub fn tuner_set_algorithm(algorithm: &str) -> Result<(), TunerError> {
-    let mut guard = TUNER.lock().unwrap();
-    let num_samples = guard
-        .as_ref()
+    TUNER
+        .lock()
+        .unwrap()
+        .as_mut()
         .ok_or(TunerError::TunerNotInitialized)?
-        .optimized_num_samples();
-
-    *guard = Some(Tuner::new(num_samples, algorithm));
-    Ok(())
+        .set_algorithm(algorithm)
 }
 
 pub fn tuner_init(algorithm: &str, num_samples: usize) {
@@ -60,10 +58,6 @@ impl Tuner {
             },
             filter: TunerFilter::new(),
         }
-    }
-
-    fn optimized_num_samples(&self) -> usize {
-        self.optimized_num_samples
     }
 
     fn calc_optimized_num_samples(num_samples: usize) -> usize {
