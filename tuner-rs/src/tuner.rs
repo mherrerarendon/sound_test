@@ -37,22 +37,22 @@ pub fn tuner_init(algorithm: &str, num_samples: usize) {
 }
 
 pub struct Tuner {
-    optimized_num_samples: usize,
+    optimized_fft_space_size: usize,
     detector: Detector,
     filter: TunerFilter,
 }
 
 impl Tuner {
     pub fn new(num_samples: usize, algorithm: &str) -> Self {
-        let optimized_num_samples = Self::calc_optimized_num_samples(num_samples);
+        let optimized_fft_space_size = Self::calc_optimized_fft_space_size(num_samples);
         Self {
-            optimized_num_samples,
+            optimized_fft_space_size,
             detector: match algorithm {
                 CEPSTRUM_ALGORITHM => Detector::from(Detector::CepstrumDetector(
-                    cepstrum::CepstrumDetector::new(optimized_num_samples),
+                    cepstrum::CepstrumDetector::new(optimized_fft_space_size),
                 )),
                 MARCO_ALGORITHM => Detector::from(Detector::MarcoDetector(
-                    marco_detector::MarcoDetector::new(optimized_num_samples),
+                    marco_detector::MarcoDetector::new(optimized_fft_space_size),
                 )),
                 _ => panic!("Invalid algorithm"),
             },
@@ -60,11 +60,11 @@ impl Tuner {
         }
     }
 
-    fn calc_optimized_num_samples(num_samples: usize) -> usize {
-        let mut optimized_sum_samples = (2 as usize).pow(14);
+    fn calc_optimized_fft_space_size(num_samples: usize) -> usize {
+        let mut optimized_sum_samples = (2 as usize).pow(10);
         loop {
-            if optimized_sum_samples > num_samples {
-                optimized_sum_samples /= 2;
+            if optimized_sum_samples < num_samples * 2 {
+                optimized_sum_samples *= 2;
             } else {
                 break optimized_sum_samples;
             }
@@ -72,13 +72,9 @@ impl Tuner {
     }
 
     pub fn detect_pitch(&mut self, byte_buffer: &[u8]) -> Result<Vec<Partial>, TunerError> {
-        if self.optimized_num_samples > byte_buffer.len() / 2 {
-            return Err(TunerError::FftFailed);
-        }
-
         let signal: Vec<f64> = byte_buffer
             .chunks_exact(2)
-            .take(self.optimized_num_samples)
+            // .take(self.optimized_num_samples)
             .map(|a| i16::from_ne_bytes([a[0], a[1]]) as f64)
             .collect();
         let top_fundamentals = self.detector.get_top_fundamentals(&signal);
@@ -98,13 +94,13 @@ impl Tuner {
         match algorithm {
             MARCO_ALGORITHM => {
                 self.detector = Detector::from(Detector::MarcoDetector(
-                    marco_detector::MarcoDetector::new(self.optimized_num_samples),
+                    marco_detector::MarcoDetector::new(self.optimized_fft_space_size),
                 ));
                 Ok(())
             }
             CEPSTRUM_ALGORITHM => {
                 self.detector = Detector::from(Detector::CepstrumDetector(
-                    cepstrum::CepstrumDetector::new(self.optimized_num_samples),
+                    cepstrum::CepstrumDetector::new(self.optimized_fft_space_size),
                 ));
                 Ok(())
             }
