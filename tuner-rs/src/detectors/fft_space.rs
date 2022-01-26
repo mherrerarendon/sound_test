@@ -83,19 +83,3 @@ impl FftSpace {
         }
     }
 }
-
-// This has to allocate a new vector, so avoid using. Use map() instead.
-impl FromIterator<Complex<f64>> for FftSpace {
-    fn from_iter<I: IntoIterator<Item = Complex<f64>>>(iter: I) -> Self {
-        let the_iter = iter.into_iter();
-        let mut fft_space = FftSpace::new(the_iter.size_hint().1.unwrap());
-        fft_space
-            .space
-            .iter_mut()
-            .zip(the_iter)
-            .for_each(|(fft, sample)| {
-                *fft = sample;
-            });
-        fft_space
-    }
-}

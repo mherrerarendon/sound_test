@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 enum DetectionAlgorithm {
   marco,
   cepstrum,
+  autocorrelation,
 }
 
 extension ParseToString on DetectionAlgorithm {
@@ -12,6 +13,8 @@ extension ParseToString on DetectionAlgorithm {
         return 'Marco';
       case 1:
         return 'Cepstrum';
+      case 2:
+        return 'Autocorrelation';
       default:
         return 'Marco';
     }
@@ -23,6 +26,8 @@ extension ParseToString on DetectionAlgorithm {
         return 'marco';
       case 1:
         return 'cepstrum';
+      case 2:
+        return 'autocorrelation';
       default:
         return 'marco';
     }
@@ -30,7 +35,7 @@ extension ParseToString on DetectionAlgorithm {
 }
 
 class SettingsModel extends ChangeNotifier {
-  DetectionAlgorithm _detectionAlgorithm = DetectionAlgorithm.marco;
+  DetectionAlgorithm _detectionAlgorithm = DetectionAlgorithm.autocorrelation;
 
   DetectionAlgorithm get detectionAlgorithm => _detectionAlgorithm;
   void setDetectionAlgorithm(DetectionAlgorithm value) {

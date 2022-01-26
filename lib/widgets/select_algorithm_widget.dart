@@ -12,9 +12,9 @@ class SelectAlgorithmPage extends StatelessWidget {
         title: Text(algorithm.toName()),
         groupValue: settings.detectionAlgorithm,
         value: algorithm,
-        onChanged: (DetectionAlgorithm? val) {
+        onChanged: (DetectionAlgorithm? val) async {
           settings.setDetectionAlgorithm(val!);
-          TunerInherited.of(context)!
+          await TunerInherited.of(context)!
               .tunerApi
               .setAlgorithm(algorithm: algorithm.toShortString());
         },

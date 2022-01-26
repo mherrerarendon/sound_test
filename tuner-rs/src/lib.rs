@@ -3,19 +3,12 @@ mod bridge_generated; /* AUTO INJECTED BY flutter_rust_bridge. This line may not
 mod constants;
 mod detectors;
 mod tuner;
-mod tuner_filter;
 
-#[derive(Debug)]
-pub enum TunerError {
-    FftFailed,
+#[derive(thiserror::Error, Debug)]
+pub(crate) enum TunerError {
+    #[error("Unknown algorithm")]
     UnknownAlgorithm,
+
+    #[error("Tuner not initialized")]
     TunerNotInitialized,
 }
-
-impl std::fmt::Display for TunerError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "TunerError is here!")
-    }
-}
-
-impl std::error::Error for TunerError {}

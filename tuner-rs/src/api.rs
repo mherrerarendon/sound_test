@@ -15,8 +15,8 @@ impl Default for Partial {
     }
 }
 
-pub fn detect_pitch(byte_buffer: Vec<u8>) -> anyhow::Result<Vec<Partial>> {
-    tuner_detect_pitch(&byte_buffer).map_err(anyhow::Error::msg)
+pub fn detect_pitch(byte_buffer: Vec<u8>) -> anyhow::Result<Partial> {
+    tuner_detect_pitch(&byte_buffer)
 }
 
 pub fn set_algorithm(algorithm: String) -> anyhow::Result<()> {

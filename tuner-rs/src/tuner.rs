@@ -2,10 +2,10 @@ use crate::{
     api::Partial,
     constants::{AUTOCORRELATION_ALGORITHM, CEPSTRUM_ALGORITHM, MARCO_ALGORITHM},
     detectors::{autocorrelation, cepstrum, marco_detector, Detector, FundamentalDetector},
-    tuner_filter::TunerFilter,
     TunerError,
 };
 
+use anyhow::{bail, Result};
 use lazy_static::lazy_static;
 use std::sync::Mutex;
 
@@ -13,7 +13,7 @@ lazy_static! {
     static ref TUNER: Mutex<Option<Tuner>> = Mutex::new(None);
 }
 
-pub fn tuner_detect_pitch(byte_buffer: &[u8]) -> Result<Vec<Partial>, TunerError> {
+pub fn tuner_detect_pitch(byte_buffer: &[u8]) -> Result<Partial> {
     TUNER
         .lock()
         .unwrap()
@@ -22,7 +22,7 @@ pub fn tuner_detect_pitch(byte_buffer: &[u8]) -> Result<Vec<Partial>, TunerError
         .detect_pitch(byte_buffer)
 }
 
-pub fn tuner_set_algorithm(algorithm: &str) -> Result<(), TunerError> {
+pub fn tuner_set_algorithm(algorithm: &str) -> Result<()> {
     TUNER
         .lock()
         .unwrap()
@@ -39,7 +39,7 @@ pub fn tuner_init(algorithm: &str, num_samples: usize) {
 pub struct Tuner {
     optimized_fft_space_size: usize,
     detector: Detector,
-    filter: TunerFilter,
+    // filter: TunerFilter,
 }
 
 impl Tuner {
@@ -48,23 +48,23 @@ impl Tuner {
         Self {
             optimized_fft_space_size,
             detector: match algorithm {
-                CEPSTRUM_ALGORITHM => Detector::from(Detector::CepstrumDetector(
-                    cepstrum::CepstrumDetector::new(optimized_fft_space_size),
+                CEPSTRUM_ALGORITHM => Detector::CepstrumDetector(cepstrum::CepstrumDetector::new(
+                    optimized_fft_space_size,
                 )),
-                MARCO_ALGORITHM => Detector::from(Detector::MarcoDetector(
-                    marco_detector::MarcoDetector::new(optimized_fft_space_size),
+                MARCO_ALGORITHM => Detector::MarcoDetector(marco_detector::MarcoDetector::new(
+                    optimized_fft_space_size,
                 )),
-                AUTOCORRELATION_ALGORITHM => Detector::from(Detector::AutocorrelationDetector(
+                AUTOCORRELATION_ALGORITHM => Detector::AutocorrelationDetector(
                     autocorrelation::AutocorrelationDetector::new(optimized_fft_space_size),
-                )),
+                ),
                 _ => panic!("Invalid algorithm"),
             },
-            filter: TunerFilter::new(),
+            // filter: TunerFilter::new(),
         }
     }
 
     fn calc_optimized_fft_space_size(num_samples: usize) -> usize {
-        let mut optimized_sum_samples = (2 as usize).pow(10);
+        let mut optimized_sum_samples = (2usize).pow(10);
         loop {
             if optimized_sum_samples < num_samples * 2 {
                 optimized_sum_samples *= 2;
@@ -74,39 +74,35 @@ impl Tuner {
         }
     }
 
-    pub fn detect_pitch(&mut self, byte_buffer: &[u8]) -> Result<Vec<Partial>, TunerError> {
+    pub fn detect_pitch(&mut self, byte_buffer: &[u8]) -> Result<Partial> {
         let signal: Vec<f64> = byte_buffer
             .chunks_exact(2)
             .map(|a| i16::from_ne_bytes([a[0], a[1]]) as f64)
             .collect();
-        let top_fundamentals = self.detector.get_top_fundamentals(&signal);
-        let best_fundamental = match top_fundamentals
-            .partials()
-            .iter()
-            .find(|partial| self.filter.within_range(partial.freq))
-        {
-            Some(partial) => partial,
-            None => top_fundamentals.partials().first().unwrap(),
-        };
-        self.filter.add_freq(best_fundamental.freq);
-        Ok(vec![best_fundamental.clone()])
+        self.detector.get_top_fundamentals(&signal)
     }
 
-    pub fn set_algorithm(&mut self, algorithm: &str) -> Result<(), TunerError> {
+    pub fn set_algorithm(&mut self, algorithm: &str) -> Result<()> {
         match algorithm {
             MARCO_ALGORITHM => {
-                self.detector = Detector::from(Detector::MarcoDetector(
-                    marco_detector::MarcoDetector::new(self.optimized_fft_space_size),
+                self.detector = Detector::MarcoDetector(marco_detector::MarcoDetector::new(
+                    self.optimized_fft_space_size,
                 ));
                 Ok(())
             }
             CEPSTRUM_ALGORITHM => {
-                self.detector = Detector::from(Detector::CepstrumDetector(
-                    cepstrum::CepstrumDetector::new(self.optimized_fft_space_size),
+                self.detector = Detector::CepstrumDetector(cepstrum::CepstrumDetector::new(
+                    self.optimized_fft_space_size,
                 ));
                 Ok(())
             }
-            _ => Err(TunerError::UnknownAlgorithm),
+            AUTOCORRELATION_ALGORITHM => {
+                self.detector = Detector::AutocorrelationDetector(
+                    autocorrelation::AutocorrelationDetector::new(self.optimized_fft_space_size),
+                );
+                Ok(())
+            }
+            _ => bail!(TunerError::UnknownAlgorithm),
         }
     }
 }
@@ -128,12 +124,12 @@ mod tests {
         let buffer = sample_data.data.take().unwrap();
 
         tuner_init(MARCO_ALGORITHM, buffer.len() / 2);
-        let partials = tuner_detect_pitch(&buffer)?;
-        assert!(partials[0].freq.approx_eq(219.543, (0.02, 2)));
+        let partial = tuner_detect_pitch(&buffer)?;
+        assert!(partial.freq.approx_eq(219.543, (0.02, 2)));
 
         tuner_set_algorithm(CEPSTRUM_ALGORITHM)?;
-        let partials = tuner_detect_pitch(&buffer)?;
-        assert!(partials[0].freq.approx_eq(218.905, (0.02, 2)));
+        let partial = tuner_detect_pitch(&buffer)?;
+        assert!(partial.freq.approx_eq(218.905, (0.02, 2)));
 
         Ok(())
     }

@@ -1,11 +1,11 @@
 use crate::{
     api::Partial,
     constants::{MAX_FREQ, PARTIAL_INTENSITY_SCALING, SAMPLE_RATE},
-    detectors::{fft_space::FftSpace, FundamentalDetector, TopFundamentals},
+    detectors::{fft_space::FftSpace, FundamentalDetector},
 };
+use anyhow::{anyhow, Result};
 use float_cmp::ApproxEq;
-use num_traits::Zero;
-use rustfft::{num_complex::Complex, FftPlanner};
+use rustfft::FftPlanner;
 
 pub const NUM_PARTIALS: usize = 5;
 
@@ -54,7 +54,7 @@ pub struct MarcoDetector {
 }
 
 impl FundamentalDetector for MarcoDetector {
-    fn get_top_fundamentals(&mut self, signal: &[f64]) -> TopFundamentals {
+    fn get_top_fundamentals(&mut self, signal: &[f64]) -> Result<Partial> {
         let mut planner = FftPlanner::new();
         let fft = planner.plan_fft_forward(self.fft_space.len());
         self.fft_space.init_fft_space(signal);
@@ -77,7 +77,7 @@ impl MarcoDetector {
         }
     }
 
-    fn calc_top_fundamentals(&self, absolute_values: &[f64]) -> TopFundamentals {
+    fn calc_top_fundamentals(&self, absolute_values: &[f64]) -> Result<Partial> {
         let highest_intensity_partials =
             self.scaled_and_ordered_highest_intensity_partials(absolute_values);
         let mut harmonic_notes = Self::decompose_into_notes(&highest_intensity_partials);
@@ -94,7 +94,7 @@ impl MarcoDetector {
                         }
                     })
                     .map(|partial| HarmonicPitch::new(partial.clone()))
-                    .unwrap(),
+                    .ok_or(anyhow!("No highest intensity partial found"))?,
             );
         }
         harmonic_notes.sort_by(|a, b| {
@@ -110,11 +110,12 @@ impl MarcoDetector {
         });
         harmonic_notes
             .into_iter()
+            .next()
             .map(|note| Partial {
                 freq: note.harmonics[0].freq,
                 intensity: note.absolute_intensity() as f64,
             })
-            .collect()
+            .ok_or(anyhow!("No harmonic notes found"))
     }
 
     fn scale_partial(&self, partial: &Partial) -> Partial {
@@ -172,16 +173,17 @@ impl MarcoDetector {
         partial: Partial,
         highest_intensity_partials: &mut Vec<Partial>,
     ) {
-        let least_intense_idx = Self::get_index_of_lowest_intensity(&highest_intensity_partials);
+        let least_intense_idx =
+            Self::get_index_of_lowest_intensity(highest_intensity_partials).unwrap();
         let least_intense_partial = &highest_intensity_partials[least_intense_idx];
         if partial.intensity > least_intense_partial.intensity && partial.freq < MAX_FREQ {
             highest_intensity_partials[least_intense_idx] = partial;
         }
     }
 
-    fn get_index_of_lowest_intensity(partials: &[Partial]) -> usize {
+    fn get_index_of_lowest_intensity(partials: &[Partial]) -> Option<usize> {
         partials
-            .into_iter()
+            .iter()
             .enumerate()
             .reduce(|accum, item| {
                 if item.1.intensity < accum.1.intensity {
@@ -190,8 +192,7 @@ impl MarcoDetector {
                     accum
                 }
             })
-            .unwrap()
-            .0
+            .map(|(idx, _)| idx)
     }
 }
 
@@ -212,8 +213,8 @@ mod tests {
             serde_json::from_str(include_str!("../../test_data/noise.json"))?;
         let buffer = sample_data.data.take().unwrap();
         let mut tuner = Tuner::new(buffer.len() / 2, MARCO_ALGORITHM);
-        let partials = tuner.detect_pitch(&buffer)?;
-        assert!(partials[0].freq.approx_eq(59.753, (0.02, 2)));
+        let partial = tuner.detect_pitch(&buffer)?;
+        assert!(partial.freq.approx_eq(59.753, (0.02, 2)));
         Ok(())
     }
 
@@ -223,8 +224,8 @@ mod tests {
             serde_json::from_str(include_str!("../../test_data/tuner_c5.json"))?;
         let buffer = sample_data.data.take().unwrap();
         let mut tuner = Tuner::new(buffer.len() / 2, MARCO_ALGORITHM);
-        let partials = tuner.detect_pitch(&buffer)?;
-        assert!(partials[0].freq.approx_eq(523.01, (0.02, 2)));
+        let partial = tuner.detect_pitch(&buffer)?;
+        assert!(partial.freq.approx_eq(523.01, (0.02, 2)));
         Ok(())
     }
 
@@ -234,8 +235,8 @@ mod tests {
             serde_json::from_str(include_str!("../../test_data/cello_open_a.json"))?;
         let buffer = sample_data.data.take().unwrap();
         let mut tuner = Tuner::new(buffer.len() / 2, MARCO_ALGORITHM);
-        let partials = tuner.detect_pitch(&buffer)?;
-        assert!(partials[0].freq.approx_eq(219.543, (0.02, 2)));
+        let partial = tuner.detect_pitch(&buffer)?;
+        assert!(partial.freq.approx_eq(219.543, (0.02, 2)));
         Ok(())
     }
 
@@ -245,8 +246,8 @@ mod tests {
             serde_json::from_str(include_str!("../../test_data/cello_open_d.json"))?;
         let buffer = sample_data.data.take().unwrap();
         let mut tuner = Tuner::new(buffer.len() / 2, MARCO_ALGORITHM);
-        let fft_peak = tuner.detect_pitch(&buffer)?;
-        assert!(fft_peak[0].freq.approx_eq(147.034, (0.02, 2)));
+        let partial = tuner.detect_pitch(&buffer)?;
+        assert!(partial.freq.approx_eq(147.034, (0.02, 2)));
         Ok(())
     }
 
@@ -256,8 +257,8 @@ mod tests {
             serde_json::from_str(include_str!("../../test_data/cello_open_g.json"))?;
         let buffer = sample_data.data.take().unwrap();
         let mut tuner = Tuner::new(buffer.len() / 2, MARCO_ALGORITHM);
-        let fft_peak = tuner.detect_pitch(&buffer)?;
-        assert!(fft_peak[0].freq.approx_eq(97.351, (0.02, 2)));
+        let partial = tuner.detect_pitch(&buffer)?;
+        assert!(partial.freq.approx_eq(97.351, (0.02, 2)));
         Ok(())
     }
 
@@ -267,8 +268,8 @@ mod tests {
             serde_json::from_str(include_str!("../../test_data/cello_open_c.json"))?;
         let buffer = sample_data.data.take().unwrap();
         let mut tuner = Tuner::new(buffer.len() / 2, MARCO_ALGORITHM);
-        let fft_peak = tuner.detect_pitch(&buffer)?;
-        assert!(fft_peak[0].freq.approx_eq(64.45, (0.02, 2)));
+        let partial = tuner.detect_pitch(&buffer)?;
+        assert!(partial.freq.approx_eq(64.45, (0.02, 2)));
         Ok(())
     }
 }

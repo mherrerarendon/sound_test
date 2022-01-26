@@ -1,7 +1,7 @@
 use crate::{
     api::Partial,
     constants::{MAX_FREQ, MIN_FREQ, NUM_FUNDAMENTALS, SAMPLE_RATE},
-    detectors::{fft_space::FftSpace, FundamentalDetector, TopFundamentals},
+    detectors::{fft_space::FftSpace, FundamentalDetector},
 };
 use num_traits::Zero;
 use pitch_detection::detector::{mcleod, PitchDetector};
@@ -11,7 +11,7 @@ pub struct McleodDetector {
 }
 
 impl FundamentalDetector for McleodDetector {
-    fn get_top_fundamentals(&mut self, signal: &[f64]) -> TopFundamentals {
+    fn get_top_fundamentals(&mut self, signal: &[f64]) -> Result<Partial> {
         let pitch = self
             .mcleod
             .get_pitch(&signal, SAMPLE_RATE as usize, 5.0, 0.7)
