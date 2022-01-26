@@ -3,6 +3,8 @@ use crate::{
     constants::{MAX_FREQ, MIN_FREQ, NUM_FUNDAMENTALS, SAMPLE_RATE},
     detectors::{fft_space::FftSpace, FundamentalDetector, TopFundamentals},
 };
+use fitting::gaussian::fit;
+use ndarray::Array;
 use rustfft::FftPlanner;
 
 pub struct AutocorrelationDetector {
@@ -23,7 +25,9 @@ impl FundamentalDetector for AutocorrelationDetector {
         let inverse_fft = planner.plan_fft_inverse(fft_space.len());
         inverse_fft.process_with_scratch(fft_space, scratch);
 
-        self.fft_space
+        let dum = 5.;
+        let peak_iter: Vec<(usize, f64)> = self
+            .fft_space
             .space()
             .iter()
             .enumerate()
@@ -31,20 +35,28 @@ impl FundamentalDetector for AutocorrelationDetector {
             .skip_while(|(_, intensity)| *intensity > 0.0)
             .skip_while(|(_, intensity)| *intensity < 0.0)
             .take_while(|(_, intensity)| *intensity > 0.0)
-            .reduce(|acc, (idx, intensity)| {
-                if intensity > acc.1 {
-                    (idx, intensity)
-                } else {
-                    acc
-                }
-            })
-            .map(|(idx, intensity)| {
-                TopFundamentals::new(Partial {
-                    freq: SAMPLE_RATE / idx as f64,
-                    intensity: intensity / self.fft_space.space()[0].re,
-                })
-            })
-            .unwrap()
+            .collect();
+        // let array = Array::from_vec(vec![1., 2., 3., 4.]);
+        let (x_vals, y_vals): (Vec<f64>, Vec<f64>) = peak_iter
+            .iter()
+            .map(|i| (i.0 as f64, i.1 / self.fft_space.space()[0].re))
+            .unzip();
+        let (mu, _, a) = fit(x_vals.into(), y_vals.into()).unwrap();
+
+        TopFundamentals::new(Partial {
+            freq: SAMPLE_RATE / mu,
+            intensity: a,
+        })
+        // peak_iter
+        //     .into_iter()
+        //     .reduce(|acc, item| if item.1 > acc.1 { item } else { acc })
+        //     .map(|(idx, intensity)| {
+        //         TopFundamentals::new(Partial {
+        //             freq: SAMPLE_RATE / idx as f64,
+        //             intensity: intensity / self.fft_space.space()[0].re,
+        //         })
+        //     })
+        //     .unwrap()
     }
 }
 
