@@ -14,7 +14,6 @@ pub struct CepstrumDetector {
 
 impl FundamentalDetector for CepstrumDetector {
     fn get_top_fundamentals(&mut self, signal: &[f64]) -> TopFundamentals {
-        // assert_eq!(signal.len(), self.scratch.len());
         let mut planner = FftPlanner::new();
         let forward_fft = planner.plan_fft_forward(self.fft_space.len());
         self.fft_space.init_fft_space(signal);
@@ -54,11 +53,8 @@ impl CepstrumDetector {
     }
 
     fn complex_spectrum(&mut self, planner: &mut FftPlanner<f64>) -> Vec<f64> {
-        self.fft_space = self
-            .fft_space
-            .freq_domain(true)
-            .map(|(freq, phase)| Complex::new(freq.log(std::f64::consts::E), phase))
-            .collect();
+        self.fft_space
+            .map(|f| Complex::new(f.norm().log(std::f64::consts::E), f.arg()));
         let (fft_space, scratch) = self.fft_space.workspace();
         let inverse_fft = planner.plan_fft_inverse(fft_space.len());
         inverse_fft.process_with_scratch(fft_space, scratch);
@@ -66,11 +62,8 @@ impl CepstrumDetector {
     }
 
     fn power_spectrum(&mut self, planner: &mut FftPlanner<f64>) -> Vec<f64> {
-        self.fft_space = self
-            .fft_space
-            .freq_domain(false)
-            .map(|(freq, _)| Complex::new(freq.log(std::f64::consts::E), 0.0))
-            .collect();
+        self.fft_space
+            .map(|f| Complex::new(f.norm_sqr().log(std::f64::consts::E), 0.0));
         let (fft_space, scratch) = self.fft_space.workspace();
         let forward_fft = planner.plan_fft_forward(fft_space.len());
         forward_fft.process_with_scratch(fft_space, scratch);

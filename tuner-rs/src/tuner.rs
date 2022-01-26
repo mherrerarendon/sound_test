@@ -1,7 +1,7 @@
 use crate::{
     api::Partial,
-    constants::{CEPSTRUM_ALGORITHM, MARCO_ALGORITHM},
-    detectors::{cepstrum, marco_detector, Detector, FundamentalDetector},
+    constants::{AUTOCORRELATION_ALGORITHM, CEPSTRUM_ALGORITHM, MARCO_ALGORITHM},
+    detectors::{autocorrelation, cepstrum, marco_detector, Detector, FundamentalDetector},
     tuner_filter::TunerFilter,
     TunerError,
 };
@@ -54,6 +54,9 @@ impl Tuner {
                 MARCO_ALGORITHM => Detector::from(Detector::MarcoDetector(
                     marco_detector::MarcoDetector::new(optimized_fft_space_size),
                 )),
+                AUTOCORRELATION_ALGORITHM => Detector::from(Detector::AutocorrelationDetector(
+                    autocorrelation::AutocorrelationDetector::new(optimized_fft_space_size),
+                )),
                 _ => panic!("Invalid algorithm"),
             },
             filter: TunerFilter::new(),
@@ -74,7 +77,6 @@ impl Tuner {
     pub fn detect_pitch(&mut self, byte_buffer: &[u8]) -> Result<Vec<Partial>, TunerError> {
         let signal: Vec<f64> = byte_buffer
             .chunks_exact(2)
-            // .take(self.optimized_num_samples)
             .map(|a| i16::from_ne_bytes([a[0], a[1]]) as f64)
             .collect();
         let top_fundamentals = self.detector.get_top_fundamentals(&signal);

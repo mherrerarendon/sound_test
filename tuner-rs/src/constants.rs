@@ -6,3 +6,4 @@ pub const NUM_FUNDAMENTALS: usize = 5;
 
 pub const MARCO_ALGORITHM: &str = "marco";
 pub const CEPSTRUM_ALGORITHM: &str = "cepstrum";
+pub const AUTOCORRELATION_ALGORITHM: &str = "autocorrelation";

@@ -1,10 +1,15 @@
+pub mod autocorrelation;
 pub mod cepstrum;
 mod fft_space;
 pub mod marco_detector;
+// pub mod mcleod;
 
 use crate::{api::Partial, constants::NUM_FUNDAMENTALS};
 
-use self::{cepstrum::CepstrumDetector, marco_detector::MarcoDetector};
+use self::{
+    autocorrelation::AutocorrelationDetector, cepstrum::CepstrumDetector,
+    marco_detector::MarcoDetector,
+};
 use enum_dispatch::enum_dispatch;
 
 pub struct TopFundamentals {
@@ -14,6 +19,12 @@ pub struct TopFundamentals {
 impl TopFundamentals {
     pub fn partials(&self) -> &[Partial] {
         &self.partials
+    }
+
+    pub fn new(partial: Partial) -> Self {
+        let mut top_fundamentals = Self::default();
+        top_fundamentals.partials[0] = partial;
+        top_fundamentals
     }
 }
 
@@ -53,4 +64,5 @@ pub trait FundamentalDetector {
 pub enum Detector {
     MarcoDetector,
     CepstrumDetector,
+    AutocorrelationDetector,
 }

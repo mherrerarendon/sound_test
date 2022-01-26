@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sound_test/models/partials_model.dart';
 import 'package:provider/provider.dart';
 
-const kCellWidth = 80.0;
+const kCellWidth = 150.0;
 const kCellHeight = 30.0;
 const kNumCells = 12 * 8 + 2; // Notes in regular piano
 const kInTuneWidth = kMaxCentsOffset * 2 / 100 * kCellWidth;

@@ -6,7 +6,7 @@ import 'package:sound_test/api.dart';
 const kA4Freq = 440.0;
 
 // 15 cents (Noticable pitch difference starts at around 10-25 cents)
-const kMaxCentsOffset = 15.0;
+const kMaxCentsOffset = 10.0;
 
 const kNotes = [
   'A',
