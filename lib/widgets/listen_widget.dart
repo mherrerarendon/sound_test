@@ -49,14 +49,12 @@ class _ListenWidgetState extends State<ListenWidget> {
         recordingDataController.stream.listen((buffer) async {
       if (buffer is FoodData) {
         try {
-          final harmonicPartials =
-              await tuner.detectPitch(byteBuffer: buffer.data!);
-          final fundamental = harmonicPartials[0];
+          final fundamental = await tuner.detectPitch(byteBuffer: buffer.data!);
           if (/*fundamental.intensity > tMinIntensity && */
               fundamental.freq > tMinFrequency &&
                   fundamental.freq < tMaxFrequency) {
             Provider.of<PartialsModel>(context, listen: false)
-                .setNewPartials(harmonicPartials);
+                .setNewFundamental(fundamental);
           }
         } catch (err) {
           debugPrint('Caught error: $err');

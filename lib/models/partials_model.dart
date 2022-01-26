@@ -25,11 +25,10 @@ const kNotes = [
 const kA4Index = 12 * 4;
 
 class PartialsModel extends ChangeNotifier {
-  List<Partial> _partials = [Partial(freq: 1.0, intensity: 1.0)];
+  Partial _partial = Partial(freq: kA4Freq, intensity: 1.0);
 
-  double get freq => _partials.first.freq;
-  double get intensity => _partials.first.intensity;
-  int get numPartials => _partials.length;
+  double get freq => _partial.freq;
+  double get intensity => _partial.intensity;
 
   double get stepsFromA4 => 12 * log(freq / kA4Freq) / log(2);
   String get noteName =>
@@ -41,13 +40,8 @@ class PartialsModel extends ChangeNotifier {
     return (absoluteCentsOffset < kMaxCentsOffset);
   }
 
-  void setNewPartials(List<Partial> partials) {
-    _partials.clear();
-    _partials = partials;
+  void setNewFundamental(Partial partial) {
+    _partial = partial;
     notifyListeners();
-  }
-
-  Partial getPartial(int index) {
-    return _partials[index];
   }
 }

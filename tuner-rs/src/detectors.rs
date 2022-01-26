@@ -8,7 +8,8 @@ use crate::api::Partial;
 use anyhow::Result;
 
 use self::{
-    autocorrelation::AutocorrelationDetector, cepstrum::CepstrumDetector,
+    autocorrelation::AutocorrelationDetector,
+    cepstrum::{complex::ComplexCepstrum, power::PowerCepstrum},
     marco_detector::MarcoDetector,
 };
 use enum_dispatch::enum_dispatch;
@@ -21,6 +22,7 @@ pub trait FundamentalDetector {
 #[enum_dispatch(FundamentalDetector)]
 pub enum Detector {
     MarcoDetector,
-    CepstrumDetector,
+    ComplexCepstrum,
+    PowerCepstrum,
     AutocorrelationDetector,
 }

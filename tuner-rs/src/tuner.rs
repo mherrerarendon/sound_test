@@ -1,7 +1,14 @@
 use crate::{
     api::Partial,
-    constants::{AUTOCORRELATION_ALGORITHM, CEPSTRUM_ALGORITHM, MARCO_ALGORITHM},
-    detectors::{autocorrelation, cepstrum, marco_detector, Detector, FundamentalDetector},
+    constants::{
+        AUTOCORRELATION_ALGORITHM, COMPLEX_CEPSTRUM_ALGORITHM, MARCO_ALGORITHM,
+        POWER_CEPSTRUM_ALGORITHM,
+    },
+    detectors::{
+        autocorrelation,
+        cepstrum::{complex, power},
+        marco_detector, Detector, FundamentalDetector,
+    },
     TunerError,
 };
 
@@ -39,7 +46,6 @@ pub fn tuner_init(algorithm: &str, num_samples: usize) {
 pub struct Tuner {
     optimized_fft_space_size: usize,
     detector: Detector,
-    // filter: TunerFilter,
 }
 
 impl Tuner {
@@ -48,9 +54,12 @@ impl Tuner {
         Self {
             optimized_fft_space_size,
             detector: match algorithm {
-                CEPSTRUM_ALGORITHM => Detector::CepstrumDetector(cepstrum::CepstrumDetector::new(
-                    optimized_fft_space_size,
-                )),
+                COMPLEX_CEPSTRUM_ALGORITHM => Detector::ComplexCepstrum(
+                    complex::ComplexCepstrum::new(optimized_fft_space_size),
+                ),
+                POWER_CEPSTRUM_ALGORITHM => {
+                    Detector::PowerCepstrum(power::PowerCepstrum::new(optimized_fft_space_size))
+                }
                 MARCO_ALGORITHM => Detector::MarcoDetector(marco_detector::MarcoDetector::new(
                     optimized_fft_space_size,
                 )),
@@ -59,14 +68,13 @@ impl Tuner {
                 ),
                 _ => panic!("Invalid algorithm"),
             },
-            // filter: TunerFilter::new(),
         }
     }
 
     fn calc_optimized_fft_space_size(num_samples: usize) -> usize {
         let mut optimized_sum_samples = (2usize).pow(10);
         loop {
-            if optimized_sum_samples < num_samples * 2 {
+            if optimized_sum_samples < num_samples {
                 optimized_sum_samples *= 2;
             } else {
                 break optimized_sum_samples;
@@ -90,8 +98,14 @@ impl Tuner {
                 ));
                 Ok(())
             }
-            CEPSTRUM_ALGORITHM => {
-                self.detector = Detector::CepstrumDetector(cepstrum::CepstrumDetector::new(
+            COMPLEX_CEPSTRUM_ALGORITHM => {
+                self.detector = Detector::ComplexCepstrum(complex::ComplexCepstrum::new(
+                    self.optimized_fft_space_size,
+                ));
+                Ok(())
+            }
+            POWER_CEPSTRUM_ALGORITHM => {
+                self.detector = Detector::PowerCepstrum(power::PowerCepstrum::new(
                     self.optimized_fft_space_size,
                 ));
                 Ok(())
@@ -123,11 +137,11 @@ mod tests {
             serde_json::from_str(include_str!("../test_data/cello_open_a.json"))?;
         let buffer = sample_data.data.take().unwrap();
 
-        tuner_init(MARCO_ALGORITHM, buffer.len() / 2);
+        tuner_init(AUTOCORRELATION_ALGORITHM, buffer.len() / 2);
         let partial = tuner_detect_pitch(&buffer)?;
-        assert!(partial.freq.approx_eq(219.543, (0.02, 2)));
+        assert!(partial.freq.approx_eq(219.634, (0.02, 2)));
 
-        tuner_set_algorithm(CEPSTRUM_ALGORITHM)?;
+        tuner_set_algorithm(COMPLEX_CEPSTRUM_ALGORITHM)?;
         let partial = tuner_detect_pitch(&buffer)?;
         assert!(partial.freq.approx_eq(218.905, (0.02, 2)));
 

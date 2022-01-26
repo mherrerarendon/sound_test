@@ -39,6 +39,8 @@ impl FundamentalDetector for AutocorrelationDetector {
             .iter()
             .map(|i| (i.0 as f64, i.1 / self.fft_space.space()[0].re))
             .unzip();
+
+        // mu, sigma, a
         let (mu, _, a) = fit(x_vals.into(), y_vals.into())?;
 
         Ok(Partial {
