@@ -47,7 +47,7 @@ pub mod test_utils {
     ) -> anyhow::Result<()> {
         let plot_title = format!("{} - {}", detector_name, samples_file);
         let output_file = format!(
-            "{}/test_data/{}.png",
+            "{}/test_data/results/{}.png",
             env!("CARGO_MANIFEST_DIR"),
             plot_title
         );
