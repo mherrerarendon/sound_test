@@ -54,7 +54,7 @@ pub struct MarcoDetector {
 }
 
 impl FundamentalDetector for MarcoDetector {
-    fn get_top_fundamentals(&mut self, signal: &[f64]) -> Result<Partial> {
+    fn get_fundamental(&mut self, signal: &[f64]) -> Result<Partial> {
         let mut planner = FftPlanner::new();
         let fft = planner.plan_fft_forward(self.fft_space.len());
         self.fft_space.init_fft_space(signal);

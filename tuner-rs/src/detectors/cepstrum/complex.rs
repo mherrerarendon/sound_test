@@ -11,7 +11,7 @@ pub struct ComplexCepstrum {
 }
 
 impl FundamentalDetector for ComplexCepstrum {
-    fn get_top_fundamentals(&mut self, signal: &[f64]) -> Result<Partial> {
+    fn get_fundamental(&mut self, signal: &[f64]) -> Result<Partial> {
         let mut planner = FftPlanner::new();
         let forward_fft = planner.plan_fft_forward(self.fft_space.len());
         self.fft_space.init_fft_space(signal);
@@ -58,7 +58,8 @@ impl ComplexCepstrum {
 
 #[cfg(test)]
 mod tests {
-    use crate::{constants::*, tuner::Tuner};
+    use super::*;
+    use crate::utils::{audio_buffer_to_signal, calc_optimized_fft_space_size};
     use float_cmp::ApproxEq;
     use serde::Deserialize;
 
@@ -72,8 +73,10 @@ mod tests {
         let mut sample_data: SampleData =
             serde_json::from_str(include_str!("../../../test_data/noise.json"))?;
         let buffer = sample_data.data.take().unwrap();
-        let mut tuner = Tuner::new(buffer.len() / 2, COMPLEX_CEPSTRUM_ALGORITHM);
-        let partial = tuner.detect_pitch(&buffer)?;
+        let signal = audio_buffer_to_signal(&buffer);
+        let fft_space_size = calc_optimized_fft_space_size(signal.len());
+        let mut detector = ComplexCepstrum::new(fft_space_size);
+        let partial = detector.get_fundamental(&signal)?;
         assert!(partial.freq.approx_eq(2000.0, (0.02, 2)));
         Ok(())
     }
@@ -83,8 +86,10 @@ mod tests {
         let mut sample_data: SampleData =
             serde_json::from_str(include_str!("../../../test_data/tuner_c5.json"))?;
         let buffer = sample_data.data.take().unwrap();
-        let mut tuner = Tuner::new(buffer.len() / 2, COMPLEX_CEPSTRUM_ALGORITHM);
-        let partial = tuner.detect_pitch(&buffer)?;
+        let signal = audio_buffer_to_signal(&buffer);
+        let fft_space_size = calc_optimized_fft_space_size(signal.len());
+        let mut detector = ComplexCepstrum::new(fft_space_size);
+        let partial = detector.get_fundamental(&signal)?;
 
         assert!(partial.freq.approx_eq(523.809, (0.02, 2)));
         Ok(())
@@ -95,8 +100,10 @@ mod tests {
         let mut sample_data: SampleData =
             serde_json::from_str(include_str!("../../../test_data/cello_open_a.json"))?;
         let buffer = sample_data.data.take().unwrap();
-        let mut tuner = Tuner::new(buffer.len() / 2, COMPLEX_CEPSTRUM_ALGORITHM);
-        let partial = tuner.detect_pitch(&buffer)?;
+        let signal = audio_buffer_to_signal(&buffer);
+        let fft_space_size = calc_optimized_fft_space_size(signal.len());
+        let mut detector = ComplexCepstrum::new(fft_space_size);
+        let partial = detector.get_fundamental(&signal)?;
 
         assert!(partial.freq.approx_eq(218.905, (0.02, 2)));
         Ok(())
@@ -107,8 +114,10 @@ mod tests {
         let mut sample_data: SampleData =
             serde_json::from_str(include_str!("../../../test_data/cello_open_d.json"))?;
         let buffer = sample_data.data.take().unwrap();
-        let mut tuner = Tuner::new(buffer.len() / 2, COMPLEX_CEPSTRUM_ALGORITHM);
-        let partial = tuner.detect_pitch(&buffer)?;
+        let signal = audio_buffer_to_signal(&buffer);
+        let fft_space_size = calc_optimized_fft_space_size(signal.len());
+        let mut detector = ComplexCepstrum::new(fft_space_size);
+        let partial = detector.get_fundamental(&signal)?;
 
         assert!(partial.freq.approx_eq(146.666, (0.02, 2)));
         Ok(())
@@ -119,8 +128,11 @@ mod tests {
         let mut sample_data: SampleData =
             serde_json::from_str(include_str!("../../../test_data/cello_open_g.json"))?;
         let buffer = sample_data.data.take().unwrap();
-        let mut tuner = Tuner::new(buffer.len() / 2, COMPLEX_CEPSTRUM_ALGORITHM);
-        let partial = tuner.detect_pitch(&buffer)?;
+        let signal = audio_buffer_to_signal(&buffer);
+        let fft_space_size = calc_optimized_fft_space_size(signal.len());
+        let mut detector = ComplexCepstrum::new(fft_space_size);
+        let partial = detector.get_fundamental(&signal)?;
+
         assert!(partial.freq.approx_eq(97.13, (0.02, 2)));
         Ok(())
     }
@@ -130,8 +142,10 @@ mod tests {
         let mut sample_data: SampleData =
             serde_json::from_str(include_str!("../../../test_data/cello_open_c.json"))?;
         let buffer = sample_data.data.take().unwrap();
-        let mut tuner = Tuner::new(buffer.len() / 2, COMPLEX_CEPSTRUM_ALGORITHM);
-        let partial = tuner.detect_pitch(&buffer)?;
+        let signal = audio_buffer_to_signal(&buffer);
+        let fft_space_size = calc_optimized_fft_space_size(signal.len());
+        let mut detector = ComplexCepstrum::new(fft_space_size);
+        let partial = detector.get_fundamental(&signal)?;
 
         // This fails to detect the C note, which should be at around 64Hz
         assert!(partial.freq.approx_eq(2588.235, (0.02, 2)));

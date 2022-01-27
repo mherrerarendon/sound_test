@@ -16,7 +16,7 @@ use enum_dispatch::enum_dispatch;
 
 #[enum_dispatch]
 pub trait FundamentalDetector {
-    fn get_top_fundamentals(&mut self, signal: &[f64]) -> Result<Partial>;
+    fn get_fundamental(&mut self, signal: &[f64]) -> Result<Partial>;
 }
 
 #[enum_dispatch(FundamentalDetector)]

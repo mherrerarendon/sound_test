@@ -11,7 +11,7 @@ pub struct McleodDetector {
 }
 
 impl FundamentalDetector for McleodDetector {
-    fn get_top_fundamentals(&mut self, signal: &[f64]) -> Result<Partial> {
+    fn get_fundamental(&mut self, signal: &[f64]) -> Result<Partial> {
         let pitch = self
             .mcleod
             .get_pitch(&signal, SAMPLE_RATE as usize, 5.0, 0.7)

@@ -12,7 +12,7 @@ pub struct AutocorrelationDetector {
 }
 
 impl FundamentalDetector for AutocorrelationDetector {
-    fn get_top_fundamentals(&mut self, signal: &[f64]) -> Result<Partial> {
+    fn get_fundamental(&mut self, signal: &[f64]) -> Result<Partial> {
         let mut planner = FftPlanner::new();
         let forward_fft = planner.plan_fft_forward(self.fft_space.len());
         self.fft_space.init_fft_space(signal);
@@ -60,7 +60,8 @@ impl AutocorrelationDetector {
 
 #[cfg(test)]
 mod tests {
-    use crate::{constants::*, tuner::Tuner};
+    use super::*;
+    use crate::utils::{audio_buffer_to_signal, calc_optimized_fft_space_size};
     use float_cmp::ApproxEq;
     use serde::Deserialize;
 
@@ -74,8 +75,11 @@ mod tests {
         let mut sample_data: SampleData =
             serde_json::from_str(include_str!("../../test_data/noise.json"))?;
         let buffer = sample_data.data.take().unwrap();
-        let mut tuner = Tuner::new(buffer.len() / 2, AUTOCORRELATION_ALGORITHM);
-        let partial = tuner.detect_pitch(&buffer)?;
+        let signal = audio_buffer_to_signal(&buffer);
+        let fft_space_size = calc_optimized_fft_space_size(signal.len());
+        let mut detector = AutocorrelationDetector::new(fft_space_size);
+        let partial = detector.get_fundamental(&signal)?;
+
         assert!(partial.freq.approx_eq(119.997, (0.02, 2)));
         Ok(())
     }
@@ -85,8 +89,10 @@ mod tests {
         let mut sample_data: SampleData =
             serde_json::from_str(include_str!("../../test_data/tuner_c5.json"))?;
         let buffer = sample_data.data.take().unwrap();
-        let mut tuner = Tuner::new(buffer.len() / 2, AUTOCORRELATION_ALGORITHM);
-        let partial = tuner.detect_pitch(&buffer)?;
+        let signal = audio_buffer_to_signal(&buffer);
+        let fft_space_size = calc_optimized_fft_space_size(signal.len());
+        let mut detector = AutocorrelationDetector::new(fft_space_size);
+        let partial = detector.get_fundamental(&signal)?;
 
         // Fails to detect C5, which should be at around 523 Hz
         assert!(partial.freq.approx_eq(263.919, (0.02, 2)));
@@ -98,8 +104,10 @@ mod tests {
         let mut sample_data: SampleData =
             serde_json::from_str(include_str!("../../test_data/cello_open_a.json"))?;
         let buffer = sample_data.data.take().unwrap();
-        let mut tuner = Tuner::new(buffer.len() / 2, AUTOCORRELATION_ALGORITHM);
-        let partial = tuner.detect_pitch(&buffer)?;
+        let signal = audio_buffer_to_signal(&buffer);
+        let fft_space_size = calc_optimized_fft_space_size(signal.len());
+        let mut detector = AutocorrelationDetector::new(fft_space_size);
+        let partial = detector.get_fundamental(&signal)?;
 
         assert!(partial.freq.approx_eq(219.634, (0.02, 2)));
         Ok(())
@@ -110,8 +118,10 @@ mod tests {
         let mut sample_data: SampleData =
             serde_json::from_str(include_str!("../../test_data/cello_open_d.json"))?;
         let buffer = sample_data.data.take().unwrap();
-        let mut tuner = Tuner::new(buffer.len() / 2, AUTOCORRELATION_ALGORITHM);
-        let partial = tuner.detect_pitch(&buffer)?;
+        let signal = audio_buffer_to_signal(&buffer);
+        let fft_space_size = calc_optimized_fft_space_size(signal.len());
+        let mut detector = AutocorrelationDetector::new(fft_space_size);
+        let partial = detector.get_fundamental(&signal)?;
 
         assert!(partial.freq.approx_eq(146.717, (0.02, 2)));
         Ok(())
@@ -122,8 +132,11 @@ mod tests {
         let mut sample_data: SampleData =
             serde_json::from_str(include_str!("../../test_data/cello_open_g.json"))?;
         let buffer = sample_data.data.take().unwrap();
-        let mut tuner = Tuner::new(buffer.len() / 2, AUTOCORRELATION_ALGORITHM);
-        let partial = tuner.detect_pitch(&buffer)?;
+        let signal = audio_buffer_to_signal(&buffer);
+        let fft_space_size = calc_optimized_fft_space_size(signal.len());
+        let mut detector = AutocorrelationDetector::new(fft_space_size);
+        let partial = detector.get_fundamental(&signal)?;
+
         assert!(partial.freq.approx_eq(97.985, (0.02, 2)));
         Ok(())
     }
@@ -133,8 +146,10 @@ mod tests {
         let mut sample_data: SampleData =
             serde_json::from_str(include_str!("../../test_data/cello_open_c.json"))?;
         let buffer = sample_data.data.take().unwrap();
-        let mut tuner = Tuner::new(buffer.len() / 2, AUTOCORRELATION_ALGORITHM);
-        let partial = tuner.detect_pitch(&buffer)?;
+        let signal = audio_buffer_to_signal(&buffer);
+        let fft_space_size = calc_optimized_fft_space_size(signal.len());
+        let mut detector = AutocorrelationDetector::new(fft_space_size);
+        let partial = detector.get_fundamental(&signal)?;
 
         // Fails to detect an open C on a cello, which should be at around 64 Hz
         assert!(partial.freq.approx_eq(129.536, (0.02, 2)));

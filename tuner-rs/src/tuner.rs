@@ -9,6 +9,7 @@ use crate::{
         cepstrum::{complex, power},
         marco_detector, Detector, FundamentalDetector,
     },
+    utils::{audio_buffer_to_signal, calc_optimized_fft_space_size},
     TunerError,
 };
 
@@ -50,7 +51,7 @@ pub struct Tuner {
 
 impl Tuner {
     pub fn new(num_samples: usize, algorithm: &str) -> Self {
-        let optimized_fft_space_size = Self::calc_optimized_fft_space_size(num_samples);
+        let optimized_fft_space_size = calc_optimized_fft_space_size(num_samples);
         Self {
             optimized_fft_space_size,
             detector: match algorithm {
@@ -71,23 +72,9 @@ impl Tuner {
         }
     }
 
-    fn calc_optimized_fft_space_size(num_samples: usize) -> usize {
-        let mut optimized_sum_samples = (2usize).pow(10);
-        loop {
-            if optimized_sum_samples < num_samples {
-                optimized_sum_samples *= 2;
-            } else {
-                break optimized_sum_samples;
-            }
-        }
-    }
-
     pub fn detect_pitch(&mut self, byte_buffer: &[u8]) -> Result<Partial> {
-        let signal: Vec<f64> = byte_buffer
-            .chunks_exact(2)
-            .map(|a| i16::from_ne_bytes([a[0], a[1]]) as f64)
-            .collect();
-        self.detector.get_top_fundamentals(&signal)
+        let signal = audio_buffer_to_signal(byte_buffer);
+        self.detector.get_fundamental(&signal)
     }
 
     pub fn set_algorithm(&mut self, algorithm: &str) -> Result<()> {
