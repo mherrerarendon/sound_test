@@ -45,12 +45,12 @@ pub mod test_utils {
         detector_name: &str,
         samples_file: &str,
     ) -> anyhow::Result<()> {
+        let plot_title = format!("{} - {}", detector_name, samples_file);
         let output_file = format!(
             "{}/test_data/{}.png",
             env!("CARGO_MANIFEST_DIR"),
-            detector_name
+            plot_title
         );
-        let plot_title = format!("{} - {}", detector_name, samples_file);
         let (x_vals, y_vals): (Vec<f64>, Vec<f64>) =
             spectrum.iter().map(|i| (i.0 as f64, i.1)).unzip();
         let y_min = y_vals.iter().cloned().reduce(f64::min).unwrap();
