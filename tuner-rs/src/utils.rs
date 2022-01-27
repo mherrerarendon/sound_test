@@ -15,3 +15,48 @@ pub fn calc_optimized_fft_space_size(num_samples: usize) -> usize {
         }
     }
 }
+
+#[cfg(test)]
+pub mod test_utils {
+    use crate::detectors::FundamentalDetector;
+    use float_cmp::ApproxEq;
+
+    use super::*;
+    use serde::Deserialize;
+    use std::fs;
+
+    pub const TEST_FFT_SPACE_SIZE: usize = 32768;
+
+    #[derive(Deserialize)]
+    pub struct SampleData {
+        pub data: Option<Vec<u8>>,
+    }
+
+    pub fn test_signal(filename: &str) -> anyhow::Result<Vec<f64>> {
+        let file_path = format!("{}/test_data/{}", env!("CARGO_MANIFEST_DIR"), filename);
+        let mut sample_data: SampleData = serde_json::from_str(&fs::read_to_string(&file_path)?)?;
+        let buffer = sample_data.data.take().unwrap();
+        Ok(audio_buffer_to_signal(&buffer))
+    }
+
+    pub fn test_fundamental_freq<D: FundamentalDetector>(
+        detector: &mut D,
+        samples_file: &str,
+        expected_freq: f64,
+    ) -> anyhow::Result<()> {
+        let signal = test_signal(samples_file)?;
+        let fft_space_size = calc_optimized_fft_space_size(signal.len());
+
+        // Sanity check
+        assert_eq!(fft_space_size, TEST_FFT_SPACE_SIZE);
+
+        let partial = detector.get_fundamental(&signal)?;
+        assert!(
+            partial.freq.approx_eq(expected_freq, (0.02, 2)),
+            "Expected freq: {}, Actual freq: {}",
+            expected_freq,
+            partial.freq
+        );
+        Ok(())
+    }
+}

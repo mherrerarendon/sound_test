@@ -116,97 +116,22 @@ impl PowerCepstrum {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::utils::{audio_buffer_to_signal, calc_optimized_fft_space_size};
-    use float_cmp::ApproxEq;
-    use serde::Deserialize;
-
-    #[derive(Deserialize)]
-    struct SampleData {
-        data: Option<Vec<u8>>,
-    }
+    use crate::utils::test_utils::*;
 
     #[test]
-    fn noise() -> anyhow::Result<()> {
-        let mut sample_data: SampleData =
-            serde_json::from_str(include_str!("../../../test_data/noise.json"))?;
-        let buffer = sample_data.data.take().unwrap();
-        let signal = audio_buffer_to_signal(&buffer);
-        let fft_space_size = calc_optimized_fft_space_size(signal.len());
-        let mut detector = PowerCepstrum::new(fft_space_size);
-        let partial = detector.get_fundamental(&signal)?;
-        assert!(partial.freq.approx_eq(4000.0, (0.02, 2)));
-        Ok(())
-    }
-
-    #[test]
-    fn tuner_c5() -> anyhow::Result<()> {
-        let mut sample_data: SampleData =
-            serde_json::from_str(include_str!("../../../test_data/tuner_c5.json"))?;
-        let buffer = sample_data.data.take().unwrap();
-        let signal = audio_buffer_to_signal(&buffer);
-        let fft_space_size = calc_optimized_fft_space_size(signal.len());
-        let mut detector = PowerCepstrum::new(fft_space_size);
-        let partial = detector.get_fundamental(&signal)?;
+    fn test_complex() -> anyhow::Result<()> {
+        let mut detector = PowerCepstrum::new(TEST_FFT_SPACE_SIZE);
+        test_fundamental_freq(&mut detector, "noise.json", 4000.0)?;
 
         // Power cepstrum fails to detect the C5 note, which should be at around 523Hz
-        assert!(partial.freq.approx_eq(3384.615, (0.02, 2)));
-        Ok(())
-    }
+        test_fundamental_freq(&mut detector, "tuner_c5.json", 3384.615)?;
 
-    #[test]
-    fn cello_open_a() -> anyhow::Result<()> {
-        let mut sample_data: SampleData =
-            serde_json::from_str(include_str!("../../../test_data/cello_open_a.json"))?;
-        let buffer = sample_data.data.take().unwrap();
-        let signal = audio_buffer_to_signal(&buffer);
-        let fft_space_size = calc_optimized_fft_space_size(signal.len());
-        let mut detector = PowerCepstrum::new(fft_space_size);
-        let partial = detector.get_fundamental(&signal)?;
-
-        assert!(partial.freq.approx_eq(218.905, (0.02, 2)));
-        Ok(())
-    }
-
-    #[test]
-    fn cello_open_d() -> anyhow::Result<()> {
-        let mut sample_data: SampleData =
-            serde_json::from_str(include_str!("../../../test_data/cello_open_d.json"))?;
-        let buffer = sample_data.data.take().unwrap();
-        let signal = audio_buffer_to_signal(&buffer);
-        let fft_space_size = calc_optimized_fft_space_size(signal.len());
-        let mut detector = PowerCepstrum::new(fft_space_size);
-        let partial = detector.get_fundamental(&signal)?;
-
-        assert!(partial.freq.approx_eq(146.666, (0.02, 2)));
-        Ok(())
-    }
-
-    #[test]
-    fn cello_open_g() -> anyhow::Result<()> {
-        let mut sample_data: SampleData =
-            serde_json::from_str(include_str!("../../../test_data/cello_open_g.json"))?;
-        let buffer = sample_data.data.take().unwrap();
-        let signal = audio_buffer_to_signal(&buffer);
-        let fft_space_size = calc_optimized_fft_space_size(signal.len());
-        let mut detector = PowerCepstrum::new(fft_space_size);
-        let partial = detector.get_fundamental(&signal)?;
-
-        assert!(partial.freq.approx_eq(97.345, (0.02, 2)));
-        Ok(())
-    }
-
-    #[test]
-    fn cello_open_c() -> anyhow::Result<()> {
-        let mut sample_data: SampleData =
-            serde_json::from_str(include_str!("../../../test_data/cello_open_c.json"))?;
-        let buffer = sample_data.data.take().unwrap();
-        let signal = audio_buffer_to_signal(&buffer);
-        let fft_space_size = calc_optimized_fft_space_size(signal.len());
-        let mut detector = PowerCepstrum::new(fft_space_size);
-        let partial = detector.get_fundamental(&signal)?;
+        test_fundamental_freq(&mut detector, "cello_open_a.json", 218.905)?;
+        test_fundamental_freq(&mut detector, "cello_open_d.json", 146.666)?;
+        test_fundamental_freq(&mut detector, "cello_open_g.json", 97.345)?;
 
         // This fails to detect the C note, which should be at around 64Hz
-        assert!(partial.freq.approx_eq(2933.333, (0.02, 2)));
+        test_fundamental_freq(&mut detector, "cello_open_c.json", 2933.333)?;
         Ok(())
     }
 }

@@ -198,84 +198,23 @@ impl MarcoDetector {
 
 #[cfg(test)]
 mod tests {
-    use crate::{constants::*, tuner::Tuner};
-    use float_cmp::ApproxEq;
-    use serde::Deserialize;
-
-    #[derive(Deserialize)]
-    struct SampleData {
-        data: Option<Vec<u8>>,
-    }
+    use super::*;
+    use crate::utils::test_utils::*;
 
     #[ignore]
     #[test]
-    fn noise() -> anyhow::Result<()> {
-        let mut sample_data: SampleData =
-            serde_json::from_str(include_str!("../../test_data/noise.json"))?;
-        let buffer = sample_data.data.take().unwrap();
-        let mut tuner = Tuner::new(buffer.len() / 2, MARCO_ALGORITHM);
-        let partial = tuner.detect_pitch(&buffer)?;
-        assert!(partial.freq.approx_eq(60.424, (0.02, 2)));
-        Ok(())
-    }
+    fn test_complex() -> anyhow::Result<()> {
+        let mut detector = MarcoDetector::new(TEST_FFT_SPACE_SIZE);
+        test_fundamental_freq(&mut detector, "noise.json", 60.424)?;
 
-    #[ignore]
-    #[test]
-    fn tuner_c5() -> anyhow::Result<()> {
-        let mut sample_data: SampleData =
-            serde_json::from_str(include_str!("../../test_data/tuner_c5.json"))?;
-        let buffer = sample_data.data.take().unwrap();
-        let mut tuner = Tuner::new(buffer.len() / 2, MARCO_ALGORITHM);
-        let partial = tuner.detect_pitch(&buffer)?;
-        assert!(partial.freq.approx_eq(523.01, (0.02, 2)));
-        Ok(())
-    }
+        // Fails to detect C5, which whould be at around 523 Hz
+        test_fundamental_freq(&mut detector, "tuner_c5.json", 523.01)?;
+        test_fundamental_freq(&mut detector, "cello_open_a.json", 219.543)?;
+        test_fundamental_freq(&mut detector, "cello_open_d.json", 147.034)?;
+        test_fundamental_freq(&mut detector, "cello_open_g.json", 97.351)?;
 
-    #[ignore]
-    #[test]
-    fn cello_open_a() -> anyhow::Result<()> {
-        let mut sample_data: SampleData =
-            serde_json::from_str(include_str!("../../test_data/cello_open_a.json"))?;
-        let buffer = sample_data.data.take().unwrap();
-        let mut tuner = Tuner::new(buffer.len() / 2, MARCO_ALGORITHM);
-        let partial = tuner.detect_pitch(&buffer)?;
-        assert!(partial.freq.approx_eq(219.543, (0.02, 2)));
-        Ok(())
-    }
-
-    #[ignore]
-    #[test]
-    fn cello_open_d() -> anyhow::Result<()> {
-        let mut sample_data: SampleData =
-            serde_json::from_str(include_str!("../../test_data/cello_open_d.json"))?;
-        let buffer = sample_data.data.take().unwrap();
-        let mut tuner = Tuner::new(buffer.len() / 2, MARCO_ALGORITHM);
-        let partial = tuner.detect_pitch(&buffer)?;
-        assert!(partial.freq.approx_eq(147.034, (0.02, 2)));
-        Ok(())
-    }
-
-    #[ignore]
-    #[test]
-    fn cello_open_g() -> anyhow::Result<()> {
-        let mut sample_data: SampleData =
-            serde_json::from_str(include_str!("../../test_data/cello_open_g.json"))?;
-        let buffer = sample_data.data.take().unwrap();
-        let mut tuner = Tuner::new(buffer.len() / 2, MARCO_ALGORITHM);
-        let partial = tuner.detect_pitch(&buffer)?;
-        assert!(partial.freq.approx_eq(97.351, (0.02, 2)));
-        Ok(())
-    }
-
-    #[ignore]
-    #[test]
-    fn cello_open_c() -> anyhow::Result<()> {
-        let mut sample_data: SampleData =
-            serde_json::from_str(include_str!("../../test_data/cello_open_c.json"))?;
-        let buffer = sample_data.data.take().unwrap();
-        let mut tuner = Tuner::new(buffer.len() / 2, MARCO_ALGORITHM);
-        let partial = tuner.detect_pitch(&buffer)?;
-        assert!(partial.freq.approx_eq(64.45, (0.02, 2)));
+        // This fails to detect the C note, which should be at around 64Hz
+        test_fundamental_freq(&mut detector, "cello_open_c.json", 64.45)?;
         Ok(())
     }
 }
