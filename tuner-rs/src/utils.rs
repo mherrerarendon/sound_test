@@ -55,7 +55,7 @@ pub mod test_utils {
             spectrum.iter().map(|i| (i.0 as f64, i.1)).unzip();
         let y_min = y_vals.iter().cloned().reduce(f64::min).unwrap();
         let y_max = y_vals.iter().cloned().reduce(f64::max).unwrap();
-        let root = BitMapBackend::new(&output_file, (640, 480)).into_drawing_area();
+        let root = BitMapBackend::new(&output_file, (1024, 768)).into_drawing_area();
         root.fill(&WHITE)?;
         let root = root.margin(10, 10, 10, 10);
         let mut chart = ChartBuilder::on(&root)
