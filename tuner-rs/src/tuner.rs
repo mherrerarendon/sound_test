@@ -74,7 +74,7 @@ impl Tuner {
 
     pub fn detect_pitch(&mut self, byte_buffer: &[u8]) -> Result<Partial> {
         let signal = audio_buffer_to_signal(byte_buffer);
-        self.detector.get_fundamental(&signal)
+        self.detector.detect_fundamental(&signal)
     }
 
     pub fn set_algorithm(&mut self, algorithm: &str) -> Result<()> {

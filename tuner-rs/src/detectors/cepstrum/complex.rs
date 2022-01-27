@@ -1,6 +1,6 @@
 use crate::{
     api::Partial,
-    constants::{MAX_FREQ, MIN_FREQ, SAMPLE_RATE},
+    constants::*,
     detectors::{fft_space::FftSpace, FundamentalDetector},
 };
 use anyhow::Result;
@@ -11,7 +11,7 @@ pub struct ComplexCepstrum {
 }
 
 impl FundamentalDetector for ComplexCepstrum {
-    fn get_fundamental(&mut self, signal: &[f64]) -> Result<Partial> {
+    fn detect_fundamental(&mut self, signal: &[f64]) -> Result<Partial> {
         let mut planner = FftPlanner::new();
         let forward_fft = planner.plan_fft_forward(self.fft_space.len());
         self.fft_space.init_fft_space(signal);
@@ -23,21 +23,12 @@ impl FundamentalDetector for ComplexCepstrum {
         let (fft_space, scratch) = self.fft_space.workspace();
         let inverse_fft = planner.plan_fft_inverse(fft_space.len());
         inverse_fft.process_with_scratch(fft_space, scratch);
-        let cepstrum: Vec<f64> = self.fft_space.space().iter().map(|f| f.re).collect();
-
-        // Frequency = SAMPLE_RATE / quefrency
-        // With this in mind we can ignore the extremes of the power cepstrum
-        // https://en.wikipedia.org/wiki/Cepstrum
-        let lower_limit = (SAMPLE_RATE / MAX_FREQ).round() as usize;
-        let upper_limit = (SAMPLE_RATE / MIN_FREQ).round() as usize;
+        let cepstrum = self.spectrum();
         let mut partials: Vec<Partial> = cepstrum
             .iter()
-            .skip(lower_limit)
-            .take(upper_limit - lower_limit)
-            .enumerate()
-            .map(|(quefrency, intensity)| Partial {
-                freq: SAMPLE_RATE / (quefrency as f64 + lower_limit as f64) as f64,
-                intensity: *intensity,
+            .map(|(quefrency, amplitude)| Partial {
+                freq: SAMPLE_RATE / *quefrency as f64,
+                intensity: *amplitude,
             })
             .collect();
         partials.sort_by(|a, b| b.intensity.partial_cmp(&a.intensity).unwrap());
@@ -45,6 +36,27 @@ impl FundamentalDetector for ComplexCepstrum {
             .into_iter()
             .next()
             .ok_or(anyhow::anyhow!("No partials found"))
+    }
+
+    fn spectrum(&self) -> Vec<(usize, f64)> {
+        // Frequency = SAMPLE_RATE / quefrency
+        // With this in mind we can ignore the extremes of the power cepstrum
+        // https://en.wikipedia.org/wiki/Cepstrum
+        let lower_limit = (SAMPLE_RATE / MAX_FREQ).round() as usize;
+        let upper_limit = (SAMPLE_RATE / MIN_FREQ).round() as usize;
+
+        self.fft_space
+            .freq_domain(false)
+            .map(|(amplitude, _)| amplitude)
+            .enumerate()
+            .skip(lower_limit)
+            .take(upper_limit - lower_limit)
+            .collect()
+    }
+
+    #[cfg(test)]
+    fn name(&self) -> &'static str {
+        COMPLEX_CEPSTRUM_ALGORITHM
     }
 }
 

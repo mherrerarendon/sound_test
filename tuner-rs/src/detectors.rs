@@ -16,7 +16,12 @@ use enum_dispatch::enum_dispatch;
 
 #[enum_dispatch]
 pub trait FundamentalDetector {
-    fn get_fundamental(&mut self, signal: &[f64]) -> Result<Partial>;
+    fn detect_fundamental(&mut self, signal: &[f64]) -> Result<Partial>;
+
+    fn spectrum(&self) -> Vec<(usize, f64)>;
+
+    #[cfg(test)]
+    fn name(&self) -> &'static str;
 }
 
 #[enum_dispatch(FundamentalDetector)]

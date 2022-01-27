@@ -1,6 +1,6 @@
 use crate::{
     api::Partial,
-    constants::SAMPLE_RATE,
+    constants::*,
     detectors::{fft_space::FftSpace, FundamentalDetector},
 };
 use anyhow::Result;
@@ -12,7 +12,7 @@ pub struct AutocorrelationDetector {
 }
 
 impl FundamentalDetector for AutocorrelationDetector {
-    fn get_fundamental(&mut self, signal: &[f64]) -> Result<Partial> {
+    fn detect_fundamental(&mut self, signal: &[f64]) -> Result<Partial> {
         let mut planner = FftPlanner::new();
         let forward_fft = planner.plan_fft_forward(self.fft_space.len());
         self.fft_space.init_fft_space(signal);
@@ -26,11 +26,8 @@ impl FundamentalDetector for AutocorrelationDetector {
         inverse_fft.process_with_scratch(fft_space, scratch);
 
         let peak: Vec<(usize, f64)> = self
-            .fft_space
-            .space()
-            .iter()
-            .enumerate()
-            .map(|(idx, f)| (idx, f.re))
+            .spectrum()
+            .into_iter()
             .skip_while(|(_, intensity)| *intensity > 0.0)
             .skip_while(|(_, intensity)| *intensity < 0.0)
             .take_while(|(_, intensity)| *intensity > 0.0)
@@ -47,6 +44,20 @@ impl FundamentalDetector for AutocorrelationDetector {
             freq: SAMPLE_RATE / mu,
             intensity: a,
         })
+    }
+
+    fn spectrum(&self) -> Vec<(usize, f64)> {
+        self.fft_space
+            .space()
+            .iter()
+            .enumerate()
+            .map(|(idx, f)| (idx, f.re))
+            .collect()
+    }
+
+    #[cfg(test)]
+    fn name(&self) -> &'static str {
+        AUTOCORRELATION_ALGORITHM
     }
 }
 
