@@ -47,10 +47,17 @@ impl FundamentalDetector for AutocorrelationDetector {
     }
 
     fn spectrum(&self) -> Vec<(usize, f64)> {
+        // Frequency = SAMPLE_RATE / quefrency
+        // With this in mind we can ignore the extremes of the power cepstrum
+        // https://en.wikipedia.org/wiki/Cepstrum
+        let lower_limit = (SAMPLE_RATE / MAX_FREQ).round() as usize;
+        let upper_limit = (SAMPLE_RATE / MIN_FREQ).round() as usize;
         self.fft_space
             .space()
             .iter()
             .enumerate()
+            .skip(lower_limit)
+            .take(upper_limit - lower_limit)
             .map(|(idx, f)| (idx, f.re))
             .collect()
     }

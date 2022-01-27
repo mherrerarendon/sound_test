@@ -61,20 +61,19 @@ impl FundamentalDetector for MarcoDetector {
 
         let (fft_space, scratch) = self.fft_space.workspace();
         fft.process_with_scratch(fft_space, scratch);
-        let absolute_values: Vec<f64> = self
-            .fft_space
-            .freq_domain(true)
-            .map(|(freq, _)| freq)
-            .collect();
+        let absolute_values: Vec<(usize, f64)> = self.spectrum();
         self.calc_top_fundamentals(&absolute_values)
     }
 
     fn spectrum(&self) -> Vec<(usize, f64)> {
+        let lower_limit = (MIN_FREQ * self.fft_space.len() as f64 / SAMPLE_RATE).round() as usize;
+        let upper_limit = (MAX_FREQ * self.fft_space.len() as f64 / SAMPLE_RATE).round() as usize;
         self.fft_space
-            .space()
-            .iter()
+            .freq_domain(true)
             .enumerate()
-            .map(|(idx, f)| (idx, f.re))
+            .skip(lower_limit)
+            .take(upper_limit - lower_limit)
+            .map(|(i, (amplitude, _))| (i, amplitude))
             .collect()
     }
 
@@ -91,7 +90,7 @@ impl MarcoDetector {
         }
     }
 
-    fn calc_top_fundamentals(&self, absolute_values: &[f64]) -> Result<Partial> {
+    fn calc_top_fundamentals(&self, absolute_values: &[(usize, f64)]) -> Result<Partial> {
         let highest_intensity_partials =
             self.scaled_and_ordered_highest_intensity_partials(absolute_values);
         let mut harmonic_notes = Self::decompose_into_notes(&highest_intensity_partials);
@@ -142,14 +141,14 @@ impl MarcoDetector {
 
     fn scaled_and_ordered_highest_intensity_partials(
         &self,
-        absolute_values: &[f64],
+        absolute_values: &[(usize, f64)],
     ) -> Vec<Partial> {
         let mut highest_intensity_partials: Vec<Partial> = vec![Partial::default(); 30];
-        absolute_values.iter().enumerate().for_each(|a| {
+        absolute_values.iter().for_each(|a| {
             Self::add_partial_if_high_intensity_and_within_freq_range(
                 Partial {
                     freq: a.0 as f64,
-                    intensity: *a.1,
+                    intensity: a.1,
                 },
                 &mut highest_intensity_partials,
             );

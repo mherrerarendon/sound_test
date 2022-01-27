@@ -44,12 +44,16 @@ pub mod test_utils {
         spectrum: &[(usize, f64)],
         detector_name: &str,
         samples_file: &str,
+        expected_freq: f64,
     ) -> anyhow::Result<()> {
-        let plot_title = format!("{} - {}", detector_name, samples_file);
+        let plot_title = format!(
+            "{} - {} - {:?} Hz",
+            detector_name, samples_file, expected_freq
+        );
         let output_file = format!(
             "{}/test_data/results/{}.png",
             env!("CARGO_MANIFEST_DIR"),
-            plot_title
+            format!("{} - {}", detector_name, samples_file)
         );
         let (x_vals, y_vals): (Vec<f64>, Vec<f64>) =
             spectrum.iter().map(|i| (i.0 as f64, i.1)).unzip();
@@ -94,7 +98,7 @@ pub mod test_utils {
         let partial = detector.detect_fundamental(&signal)?;
         let spectrum = detector.spectrum();
         let detector_name = detector.name();
-        plot(&spectrum, detector_name, samples_file)?;
+        plot(&spectrum, detector_name, samples_file, expected_freq)?;
         assert!(
             partial.freq.approx_eq(expected_freq, (0.02, 2)),
             "Expected freq: {}, Actual freq: {}",
