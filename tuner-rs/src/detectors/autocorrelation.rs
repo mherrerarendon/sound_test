@@ -104,7 +104,7 @@ impl FundamentalDetector for AutocorrelationDetector {
             .enumerate()
             .skip(lower_limit)
             .take(upper_limit - lower_limit)
-            .map(|(idx, f)| (idx + 1, f.re / self.fft_space.space()[0].re))
+            .map(|(idx, f)| (idx /*+ 1*/, f.re / self.fft_space.space()[0].re))
             .collect()
     }
 

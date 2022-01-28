@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 enum DetectionAlgorithm {
   marco,
-  cepstrum,
+  complex,
+  power,
   autocorrelation,
 }
 
@@ -12,8 +13,10 @@ extension ParseToString on DetectionAlgorithm {
       case 0:
         return 'Marco';
       case 1:
-        return 'Cepstrum';
+        return 'Complex Cepstrum';
       case 2:
+        return 'Power Cepstrum';
+      case 3:
         return 'Autocorrelation';
       default:
         return 'Marco';
@@ -25,8 +28,10 @@ extension ParseToString on DetectionAlgorithm {
       case 0:
         return 'marco';
       case 1:
-        return 'cepstrum';
+        return 'complex';
       case 2:
+        return 'power';
+      case 3:
         return 'autocorrelation';
       default:
         return 'marco';

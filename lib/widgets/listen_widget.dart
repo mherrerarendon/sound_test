@@ -50,11 +50,14 @@ class _ListenWidgetState extends State<ListenWidget> {
       if (buffer is FoodData) {
         try {
           final fundamental = await tuner.detectPitch(byteBuffer: buffer.data!);
-          if (/*fundamental.intensity > tMinIntensity && */
-              fundamental.freq > tMinFrequency &&
-                  fundamental.freq < tMaxFrequency) {
-            Provider.of<PartialsModel>(context, listen: false)
-                .setNewFundamental(fundamental);
+          if (fundamental.freq > tMinFrequency &&
+              fundamental.freq < tMaxFrequency) {
+            if ((detectionAlgorithm == 'autocorrelation' &&
+                    fundamental.intensity > .9) ||
+                (detectionAlgorithm != 'autocorrelation')) {
+              Provider.of<PartialsModel>(context, listen: false)
+                  .setNewFundamental(fundamental);
+            }
           }
         } catch (err) {
           debugPrint('Caught error: $err');
