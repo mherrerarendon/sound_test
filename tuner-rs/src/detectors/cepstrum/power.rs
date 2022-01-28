@@ -85,18 +85,16 @@ impl FundamentalDetector for PowerCepstrum {
         let inverse_fft = planner.plan_fft_inverse(fft_space.len());
         inverse_fft.process_with_scratch(fft_space, scratch);
 
-        // mu, amplitude
-        let mut cepstrum_peaks: Vec<(f64, f64)> =
-            self.spectrum().into_iter().cepstrum_peaks().collect();
-
-        // Sort by highest amplitude
-        cepstrum_peaks.sort_by(|(_, amplitude_a), (_, amplitude_b)| {
-            amplitude_b.partial_cmp(amplitude_a).unwrap()
-        });
-
-        cepstrum_peaks
+        self.spectrum()
             .into_iter()
-            .nth(0)
+            .cepstrum_peaks()
+            .reduce(|accum, quefrency| {
+                if quefrency.1 > accum.1 {
+                    quefrency
+                } else {
+                    accum
+                }
+            })
             .map(|(mu, amplitude)| Partial {
                 freq: SAMPLE_RATE / mu,
                 intensity: amplitude,

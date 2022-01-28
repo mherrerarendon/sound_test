@@ -87,7 +87,9 @@ impl FundamentalDetector for AutocorrelationDetector {
                     accum
                 }
             })
-            .ok_or(anyhow::anyhow!("No fundamental found"))
+            .ok_or(anyhow::anyhow!(
+                "Failed to detect fundamental with autocorrelation"
+            ))
     }
 
     fn spectrum(&self) -> Vec<(usize, f64)> {
