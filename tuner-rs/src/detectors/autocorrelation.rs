@@ -5,6 +5,7 @@ use crate::{
 };
 use anyhow::Result;
 use fitting::gaussian::fit;
+use float_cmp::ApproxEq;
 use rustfft::FftPlanner;
 
 pub struct AutocorrelationDetector {
@@ -28,14 +29,11 @@ impl FundamentalDetector for AutocorrelationDetector {
         let peak: Vec<(usize, f64)> = self
             .spectrum()
             .into_iter()
-            .skip_while(|(_, intensity)| *intensity > 0.0)
-            .skip_while(|(_, intensity)| *intensity < 0.0)
-            .take_while(|(_, intensity)| *intensity > 0.0)
+            .skip_while(|(_, intensity)| *intensity > 0.001)
+            .skip_while(|(_, intensity)| *intensity <= 0.0)
+            .take_while(|(_, intensity)| *intensity >= 0.0)
             .collect();
-        let (x_vals, y_vals): (Vec<f64>, Vec<f64>) = peak
-            .iter()
-            .map(|i| (i.0 as f64, i.1 / self.fft_space.space()[0].re))
-            .unzip();
+        let (x_vals, y_vals): (Vec<f64>, Vec<f64>) = peak.iter().map(|i| (i.0 as f64, i.1)).unzip();
 
         // mu, sigma, a
         let (mu, _, a) = fit(x_vals.into(), y_vals.into())?;
@@ -58,7 +56,7 @@ impl FundamentalDetector for AutocorrelationDetector {
             .enumerate()
             .skip(lower_limit)
             .take(upper_limit - lower_limit)
-            .map(|(idx, f)| (idx, f.re))
+            .map(|(idx, f)| (idx + 1, f.re / self.fft_space.space()[0].re))
             .collect()
     }
 
@@ -82,18 +80,18 @@ mod tests {
     use crate::utils::test_utils::*;
 
     #[test]
-    fn test_complex() -> anyhow::Result<()> {
+    fn test_autocorrelation() -> anyhow::Result<()> {
         let mut detector = AutocorrelationDetector::new(TEST_FFT_SPACE_SIZE);
-        test_fundamental_freq(&mut detector, "noise.json", 119.997)?;
+        test_fundamental_freq(&mut detector, "noise.json", 119.671)?;
 
         // Fails to detect C5, which whould be at around 523 Hz
-        test_fundamental_freq(&mut detector, "tuner_c5.json", 263.919)?;
-        test_fundamental_freq(&mut detector, "cello_open_a.json", 219.634)?;
-        test_fundamental_freq(&mut detector, "cello_open_d.json", 146.717)?;
-        test_fundamental_freq(&mut detector, "cello_open_g.json", 97.985)?;
+        test_fundamental_freq(&mut detector, "tuner_c5.json", 523.537)?;
+        test_fundamental_freq(&mut detector, "cello_open_a.json", 218.543)?;
+        test_fundamental_freq(&mut detector, "cello_open_d.json", 146.230)?;
+        test_fundamental_freq(&mut detector, "cello_open_g.json", 97.767)?;
 
         // This fails to detect the C note, which should be at around 64Hz
-        test_fundamental_freq(&mut detector, "cello_open_c.json", 129.536)?;
+        test_fundamental_freq(&mut detector, "cello_open_c.json", 129.156)?;
         Ok(())
     }
 }

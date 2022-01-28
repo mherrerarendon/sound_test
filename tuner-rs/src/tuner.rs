@@ -126,7 +126,7 @@ mod tests {
 
         tuner_init(AUTOCORRELATION_ALGORITHM, buffer.len() / 2);
         let partial = tuner_detect_pitch(&buffer)?;
-        assert!(partial.freq.approx_eq(219.634, (0.02, 2)));
+        assert!(partial.freq.approx_eq(218.543, (0.02, 2)));
 
         tuner_set_algorithm(COMPLEX_CEPSTRUM_ALGORITHM)?;
         let partial = tuner_detect_pitch(&buffer)?;
