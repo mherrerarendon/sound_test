@@ -26,7 +26,8 @@ pub mod test_utils {
     use serde::Deserialize;
     use std::fs;
 
-    pub const TEST_FFT_SPACE_SIZE: usize = 32768;
+    pub(crate) const TEST_FFT_SPACE_SIZE: usize = 32768;
+    const PLOT: bool = false;
 
     #[derive(Deserialize)]
     pub struct SampleData {
@@ -96,9 +97,13 @@ pub mod test_utils {
         assert_eq!(fft_space_size, TEST_FFT_SPACE_SIZE);
 
         let partial = detector.detect_fundamental(&signal)?;
-        let spectrum = detector.spectrum();
-        let detector_name = detector.name();
-        plot(&spectrum, detector_name, samples_file, expected_freq)?;
+
+        if PLOT {
+            let spectrum = detector.spectrum();
+            let detector_name = detector.name();
+            plot(&spectrum, detector_name, samples_file, expected_freq)?;
+        }
+
         assert!(
             partial.freq.approx_eq(expected_freq, (0.02, 2)),
             "Expected freq: {}, Actual freq: {}",

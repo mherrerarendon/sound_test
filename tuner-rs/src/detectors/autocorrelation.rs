@@ -5,8 +5,58 @@ use crate::{
 };
 use anyhow::Result;
 use fitting::gaussian::fit;
-use float_cmp::ApproxEq;
 use rustfft::FftPlanner;
+
+struct PositivePeakIter<I: Iterator<Item = (usize, f64)>> {
+    signal: I,
+}
+
+trait PositivePeaks<I>
+where
+    I: Iterator<Item = (usize, f64)>,
+{
+    fn peaks(self) -> PositivePeakIter<I>;
+}
+
+impl<I> PositivePeaks<I> for I
+where
+    I: Iterator<Item = (usize, f64)>,
+{
+    fn peaks(self) -> PositivePeakIter<I> {
+        PositivePeakIter { signal: self }
+    }
+}
+
+impl<I> Iterator for PositivePeakIter<I>
+where
+    I: Iterator<Item = (usize, f64)>,
+{
+    type Item = Partial;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let (x_vals, y_vals): (Vec<f64>, Vec<f64>) = self
+            .signal
+            .by_ref()
+            .skip_while(|(_, intensity)| *intensity <= 0.0)
+            .take_while(|(_, intensity)| *intensity >= 0.0)
+            .map(|(index, intensity)| (index as f64, intensity))
+            .unzip();
+
+        if x_vals.is_empty() {
+            return None;
+        }
+
+        // mu, sigma, a
+        if let Ok((mu, _, amplitude)) = fit(x_vals.into(), y_vals.into()) {
+            Some(Partial {
+                freq: SAMPLE_RATE / mu,
+                intensity: amplitude,
+            })
+        } else {
+            None
+        }
+    }
+}
 
 pub struct AutocorrelationDetector {
     fft_space: FftSpace,
@@ -26,22 +76,18 @@ impl FundamentalDetector for AutocorrelationDetector {
         let inverse_fft = planner.plan_fft_inverse(fft_space.len());
         inverse_fft.process_with_scratch(fft_space, scratch);
 
-        let peak: Vec<(usize, f64)> = self
-            .spectrum()
+        self.spectrum()
             .into_iter()
-            .skip_while(|(_, intensity)| *intensity > 0.001)
-            .skip_while(|(_, intensity)| *intensity <= 0.0)
-            .take_while(|(_, intensity)| *intensity >= 0.0)
-            .collect();
-        let (x_vals, y_vals): (Vec<f64>, Vec<f64>) = peak.iter().map(|i| (i.0 as f64, i.1)).unzip();
-
-        // mu, sigma, a
-        let (mu, _, a) = fit(x_vals.into(), y_vals.into())?;
-
-        Ok(Partial {
-            freq: SAMPLE_RATE / mu,
-            intensity: a,
-        })
+            .skip_while(|(_, intensity)| *intensity > 0.001) // Skip the first slide
+            .peaks()
+            .reduce(|accum, partial| {
+                if partial.intensity > accum.intensity {
+                    partial
+                } else {
+                    accum
+                }
+            })
+            .ok_or(anyhow::anyhow!("No fundamental found"))
     }
 
     fn spectrum(&self) -> Vec<(usize, f64)> {
@@ -82,16 +128,13 @@ mod tests {
     #[test]
     fn test_autocorrelation() -> anyhow::Result<()> {
         let mut detector = AutocorrelationDetector::new(TEST_FFT_SPACE_SIZE);
-        test_fundamental_freq(&mut detector, "noise.json", 119.671)?;
+        test_fundamental_freq(&mut detector, "noise.json", 59.818)?;
 
-        // Fails to detect C5, which whould be at around 523 Hz
         test_fundamental_freq(&mut detector, "tuner_c5.json", 523.537)?;
         test_fundamental_freq(&mut detector, "cello_open_a.json", 218.543)?;
         test_fundamental_freq(&mut detector, "cello_open_d.json", 146.230)?;
         test_fundamental_freq(&mut detector, "cello_open_g.json", 97.767)?;
-
-        // This fails to detect the C note, which should be at around 64Hz
-        test_fundamental_freq(&mut detector, "cello_open_c.json", 129.156)?;
+        test_fundamental_freq(&mut detector, "cello_open_c.json", 64.440)?;
         Ok(())
     }
 }
