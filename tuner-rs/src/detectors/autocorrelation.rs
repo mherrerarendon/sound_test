@@ -7,27 +7,27 @@ use anyhow::Result;
 use fitting::gaussian::fit;
 use rustfft::FftPlanner;
 
-struct PositivePeakIter<I: Iterator<Item = (usize, f64)>> {
+struct AutocorrelationPeakIter<I: Iterator<Item = (usize, f64)>> {
     signal: I,
 }
 
-trait PositivePeaks<I>
+trait AutocorrelationPeaks<I>
 where
     I: Iterator<Item = (usize, f64)>,
 {
-    fn peaks(self) -> PositivePeakIter<I>;
+    fn autocorrelation_peaks(self) -> AutocorrelationPeakIter<I>;
 }
 
-impl<I> PositivePeaks<I> for I
+impl<I> AutocorrelationPeaks<I> for I
 where
     I: Iterator<Item = (usize, f64)>,
 {
-    fn peaks(self) -> PositivePeakIter<I> {
-        PositivePeakIter { signal: self }
+    fn autocorrelation_peaks(self) -> AutocorrelationPeakIter<I> {
+        AutocorrelationPeakIter { signal: self }
     }
 }
 
-impl<I> Iterator for PositivePeakIter<I>
+impl<I> Iterator for AutocorrelationPeakIter<I>
 where
     I: Iterator<Item = (usize, f64)>,
 {
@@ -79,7 +79,7 @@ impl FundamentalDetector for AutocorrelationDetector {
         self.spectrum()
             .into_iter()
             .skip_while(|(_, intensity)| *intensity > 0.001) // Skip the first slide
-            .peaks()
+            .autocorrelation_peaks()
             .reduce(|accum, partial| {
                 if partial.intensity > accum.intensity {
                     partial
