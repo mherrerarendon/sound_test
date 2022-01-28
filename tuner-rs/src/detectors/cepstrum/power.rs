@@ -33,34 +33,36 @@ where
     I: Iterator<Item = (usize, f64)>,
 {
     // mu, sigma, a
-    type Item = (f64, f64, f64);
+    type Item = (f64, f64);
 
     fn next(&mut self) -> Option<Self::Item> {
-        // let (x_vals, y_vals): (Vec<f64>, Vec<f64>) = self
-        let asf = loop {
-            let dum = self
-                .signal
-                .by_ref()
-                .peaks(PeaksDetector::new(40, 5.0, 0.0), |e| e.1)
-                .skip_while(|(_, peak)| *peak == Peak::None)
-                .take_while(|(_, peak)| *peak == Peak::High);
-            if let Some(size) = dum.size_hint().1 {
-                if size > 3 {
-                    break dum
-                        .map(|(quefrency, _)| (quefrency.0 as f64, quefrency.1))
-                        .unzip();
-                }
-            } else {
-            }
-        };
-        if x_vals.is_empty() {
-            return None;
-        }
+        let (x_vals, y_vals): (Vec<f64>, Vec<f64>) = self
+            .signal
+            .by_ref()
+            .peaks(PeaksDetector::new(60, 10.0, 0.0), |e| e.1)
+            .skip_while(|(_, peak)| *peak == Peak::None)
+            .take_while(|(_, peak)| *peak == Peak::High)
+            .map(|(quefrency, _)| (quefrency.0 as f64, quefrency.1))
+            .unzip();
 
-        if let Ok(the_fit) = fit(x_vals.into(), y_vals.into()) {
-            Some(the_fit)
-        } else {
-            None
+        match x_vals.len() {
+            0 => None,
+            1 => Some((x_vals[0], y_vals[0])),
+            2 => {
+                if y_vals[0] > y_vals[1] {
+                    Some((x_vals[0], y_vals[0]))
+                } else {
+                    Some((x_vals[1], y_vals[1]))
+                }
+            }
+            _ => {
+                if let Ok((mu, _, amplitude)) = fit(x_vals.into(), y_vals.into()) {
+                    Some((mu, amplitude))
+                } else {
+                    assert!(false, "should not get here");
+                    None
+                }
+            }
         }
     }
 }
@@ -83,22 +85,19 @@ impl FundamentalDetector for PowerCepstrum {
         let inverse_fft = planner.plan_fft_inverse(fft_space.len());
         inverse_fft.process_with_scratch(fft_space, scratch);
 
-        // mu, sigma, a
-        let mut cepstrum_peaks: Vec<(f64, f64, f64)> =
+        // mu, amplitude
+        let mut cepstrum_peaks: Vec<(f64, f64)> =
             self.spectrum().into_iter().cepstrum_peaks().collect();
 
         // Sort by highest amplitude
-        cepstrum_peaks.sort_by(|(_, _, amplitude_a), (_, _, amplitude_b)| {
+        cepstrum_peaks.sort_by(|(_, amplitude_a), (_, amplitude_b)| {
             amplitude_b.partial_cmp(amplitude_a).unwrap()
         });
 
-        // Sort by lowest sigma
-        cepstrum_peaks
-            .sort_by(|(_, sigma_a, _), (_, sigma_b, _)| sigma_a.partial_cmp(sigma_b).unwrap());
         cepstrum_peaks
             .into_iter()
             .nth(0)
-            .map(|(mu, _, amplitude)| Partial {
+            .map(|(mu, amplitude)| Partial {
                 freq: SAMPLE_RATE / mu,
                 intensity: amplitude,
             })
@@ -145,17 +144,15 @@ mod tests {
     #[test]
     fn test_power() -> anyhow::Result<()> {
         let mut detector = PowerCepstrum::new(TEST_FFT_SPACE_SIZE);
-        // test_fundamental_freq(&mut detector, "noise.json", 4000.0)?;
+        test_fundamental_freq(&mut detector, "noise.json", 60.689)?;
 
         // Power cepstrum fails to detect the C5 note, which should be at around 523Hz
-        // test_fundamental_freq(&mut detector, "tuner_c5.json", 3384.615)?;
+        test_fundamental_freq(&mut detector, "tuner_c5.json", 261.591)?;
 
-        // test_fundamental_freq(&mut detector, "cello_open_a.json", 218.905)?;
-        // test_fundamental_freq(&mut detector, "cello_open_d.json", 146.666)?;
-        // test_fundamental_freq(&mut detector, "cello_open_g.json", 97.345)?;
-
-        // This fails to detect the C note, which should be at around 64Hz
-        test_fundamental_freq(&mut detector, "cello_open_c.json", 2933.333)?;
+        test_fundamental_freq(&mut detector, "cello_open_a.json", 219.418)?;
+        test_fundamental_freq(&mut detector, "cello_open_d.json", 146.730)?;
+        test_fundamental_freq(&mut detector, "cello_open_g.json", 97.214)?;
+        test_fundamental_freq(&mut detector, "cello_open_c.json", 64.454)?;
         Ok(())
     }
 }

@@ -90,6 +90,12 @@ pub mod test_utils {
         samples_file: &str,
         expected_freq: f64,
     ) -> anyhow::Result<()> {
+        println!(
+            "{} - {} - {:?} Hz",
+            detector.name(),
+            samples_file,
+            expected_freq
+        );
         let signal = test_signal(samples_file)?;
         let fft_space_size = calc_optimized_fft_space_size(signal.len());
 
