@@ -45,7 +45,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget>
                     child: FittedBox(
                         child: Column(
                       children: [
-                        Icon(Icons.arrow_upward),
+                        const Icon(Icons.arrow_upward),
                         Text(
                             '${partials.centsOffset > 0 ? '+' : ''}${partials.centsOffset.toStringAsFixed(2)}')
                       ],

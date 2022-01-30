@@ -10,42 +10,22 @@ class AlgorithmButton extends StatelessWidget {
     showModalBottomSheet(
         context: context,
         builder: (context) {
-          return SelectAlgorithmPage();
+          return const SelectAlgorithmPage();
         });
-    // Navigator.of(context)
-    //     .push(MaterialPageRoute(builder: (BuildContext context) {
-    //   return const SelectAlgorithmPage();
-    // }));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxHeight: 60 /*, maxWidth: 200*/),
-        child: ElevatedButton(
-          child: Consumer<SettingsModel>(
-              builder: (context, settings, _) => Text(
-                    settings.detectionAlgorithm.toName(),
-                    style: const TextStyle(
-                      // color: Colors.white,
-                      fontSize: 40,
-                    ),
-                  )),
-          onPressed: () {
-            _pushSelectAlgorithm(context);
-          },
-          // style: TextButton.styleFrom(
-          //   primary: Theme.of(context).colorScheme.onSurface,
-          //   // primary: Theme.of(context).colorScheme.onSurface,
-          //   onSurface: Colors.black,
-          //   // minimumSize: Size(88, 36),
-          //   // padding: EdgeInsets.symmetric(horizontal: 16.0),
-          //   shape: const RoundedRectangleBorder(
-          //     borderRadius: BorderRadius.all(Radius.circular(2.0)),
-          //   ),
-          // ),
-        ),
+    return FittedBox(
+      child: ElevatedButton(
+        child: Consumer<SettingsModel>(
+            builder: (context, settings, _) => Text(
+                  settings.detectionAlgorithm.toName(),
+                  style: const TextStyle(),
+                )),
+        onPressed: () {
+          _pushSelectAlgorithm(context);
+        },
       ),
     );
   }

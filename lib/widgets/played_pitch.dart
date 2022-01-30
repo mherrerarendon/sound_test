@@ -13,7 +13,7 @@ class PlayedPitch extends StatelessWidget {
       builder: (context, partials, _) {
         return Row(
           children: [
-            Container(
+            SizedBox(
               width: kWidth,
               child: FittedBox(
                 child: Text(
@@ -37,7 +37,7 @@ class PlayedPitch extends StatelessWidget {
                 ),
               ),
             ),
-            Container(
+            SizedBox(
               width: kWidth,
               child: FittedBox(
                 child: Text(

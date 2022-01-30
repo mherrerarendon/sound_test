@@ -12,64 +12,18 @@ class MainDos extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: [
+      children: const [
         Expanded(child: PlayedPitch()),
-        const SizedBox(height: 20),
-        Container(
+        SizedBox(height: 20),
+        SizedBox(
           height: kHeight,
-          // color: Colors.blue,
           child: CentsRuler(),
         ),
-        Container(
+        SizedBox(
           height: kHeight,
-          // color: Colors.green,
           child: MyStatefulWidget(),
         ),
-        const SizedBox(height: 40),
-      ],
-    );
-    return Row(
-      children: [
-        Container(
-          width: kWidth,
-          child: Column(
-            children: [
-              Expanded(
-                  child: Container(
-                color: Colors.purple,
-              )),
-              Container(
-                height: kHeight,
-                color: Colors.blue,
-              ),
-              Container(
-                height: kHeight,
-                color: Colors.green,
-              ),
-            ],
-          ),
-        ),
-        Expanded(
-            child: Column(
-          children: [
-            Expanded(
-                child: Container(
-              color: Colors.green,
-            )),
-            Container(
-              height: kHeight,
-              color: Colors.purple,
-            ),
-            Container(
-              height: kHeight,
-              color: Colors.blue,
-            )
-          ],
-        )),
-        Container(
-          width: kWidth,
-          color: Colors.red,
-        ),
+        SizedBox(height: 40),
       ],
     );
   }

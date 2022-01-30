@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sound_test/widgets/algorithm_button.dart';
 import 'package:sound_test/widgets/listen_widget.dart';
-import 'package:sound_test/widgets/pitch_slider.dart';
-import 'package:sound_test/widgets/all_partials.dart';
-import 'package:sound_test/widgets/played_pitch.dart';
 import 'package:sound_test/widgets/main_dos.dart';
 
 class MainWidget extends StatefulWidget {
@@ -16,27 +13,12 @@ class MainWidget extends StatefulWidget {
 class _MainWidgetState extends State<MainWidget> {
   @override
   Widget build(BuildContext context) {
-    Widget makeBody() {
-      return Column(
-        children: [
-          const SizedBox(height: 40),
-          const PlayedPitch(),
-          const SizedBox(height: 20),
-          PitchSlider(),
-          const SizedBox(height: 20),
-          const AllPartials(),
-          const SizedBox(height: 30),
-        ],
-      );
-    }
-
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
       appBar: AppBar(
         title: const Text('Sound Test'),
       ),
-      body: MainDos(),
-      // body: makeBody(),
+      body: const MainDos(),
       bottomNavigationBar: const BottomAppBar(
         shape: CircularNotchedRectangle(),
         child: SizedBox(
