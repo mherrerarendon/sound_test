@@ -13,13 +13,13 @@ class CentsRuler extends StatelessWidget {
         final width = index == numTicks ~/ 2
             ? 4.0
             : index % 2 == 0
-                ? 3.0
-                : 2.0;
+                ? 2.0
+                : 1.0;
         final height = index == numTicks ~/ 2
             ? 1.0
             : index % 2 == 0
-                ? .6
-                : .3;
+                ? .4
+                : .2;
         return Expanded(child: Tick(width, height, Colors.black));
       });
       return Row(children: ticks);

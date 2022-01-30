@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sound_test/models/partials_model.dart';
 
-const double kWidth = 70;
+const double kWidth = 40;
 
 class PlayedPitch extends StatelessWidget {
   const PlayedPitch({Key? key}) : super(key: key);
@@ -25,6 +25,9 @@ class PlayedPitch extends StatelessWidget {
                 ),
               ),
             ),
+            SizedBox(
+              width: 10,
+            ),
             Expanded(
               child: FittedBox(
                 alignment: Alignment.bottomCenter,
@@ -36,6 +39,9 @@ class PlayedPitch extends StatelessWidget {
                           : Colors.grey),
                 ),
               ),
+            ),
+            SizedBox(
+              width: 10,
             ),
             SizedBox(
               width: kWidth,

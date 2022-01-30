@@ -16,12 +16,12 @@ class MainDos extends StatelessWidget {
         Expanded(child: PlayedPitch()),
         SizedBox(height: 20),
         SizedBox(
-          height: kHeight,
+          height: 30,
           child: CentsRuler(),
         ),
         SizedBox(
-          height: kHeight,
-          child: MyStatefulWidget(),
+          height: 100,
+          child: PitchPointer(),
         ),
         SizedBox(height: 40),
       ],
