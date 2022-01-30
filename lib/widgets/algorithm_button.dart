@@ -8,6 +8,7 @@ class AlgorithmButton extends StatelessWidget {
 
   void _pushSelectAlgorithm(BuildContext context) {
     showModalBottomSheet(
+        isDismissible: true,
         context: context,
         builder: (context) {
           return const SelectAlgorithmPage();
