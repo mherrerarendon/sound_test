@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sound_test/models/settings_model.dart';
 import 'package:sound_test/widgets/tuner_inhereted_widget.dart';
+import 'package:sound_test/widgets/algorithm_details.dart';
 
 class SelectAlgorithmPage extends StatelessWidget {
   const SelectAlgorithmPage({Key? key}) : super(key: key);
@@ -31,8 +32,19 @@ class SelectAlgorithmPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pitch Detection Algorithm'),
-      ),
+          title: const Text('Pitch Detection Algorithm'),
+          actions: <Widget>[
+            IconButton(
+              icon: const Icon(Icons.help),
+              tooltip: 'Help me choose',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AlgorithmDetails()),
+                );
+              },
+            ),
+          ]),
       body: Consumer<SettingsModel>(
           builder: (context, settings, _) => buildListView(settings, context)),
     );

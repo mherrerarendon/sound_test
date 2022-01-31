@@ -5,6 +5,11 @@ enum DetectionAlgorithm {
   autocorrelation,
 }
 
+const String _kCepstrumDescription =
+    'The cepstrum pitch detection algorithm works well with instruments that are rich in overtones.';
+const String _kAutocorrelation =
+    'The autocorrelation pitch detection algorithm works well with instruments that have a pure sound.';
+
 extension ParseToString on DetectionAlgorithm {
   String toName() {
     switch (index) {
@@ -25,6 +30,28 @@ extension ParseToString on DetectionAlgorithm {
         return 'autocorrelation';
       default:
         return 'power';
+    }
+  }
+
+  String description() {
+    switch (index) {
+      case 0:
+        return _kCepstrumDescription;
+      case 1:
+        return _kAutocorrelation;
+      default:
+        return _kCepstrumDescription;
+    }
+  }
+
+  String instruments() {
+    switch (index) {
+      case 0:
+        return '🎻🎺🎷';
+      case 1:
+        return '🎻🎺🎷';
+      default:
+        return _kCepstrumDescription;
     }
   }
 }
