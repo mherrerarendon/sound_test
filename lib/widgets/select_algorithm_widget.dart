@@ -10,7 +10,7 @@ class SelectAlgorithmPage extends StatelessWidget {
   Column buildListView(SettingsModel settings, BuildContext context) {
     final radioList = DetectionAlgorithm.values.map((algorithm) {
       return RadioListTile<DetectionAlgorithm>(
-        title: Text(algorithm.toName(), style: TextStyle(fontSize: 24)),
+        title: Text(algorithm.toName(), style: const TextStyle(fontSize: 24)),
         groupValue: settings.detectionAlgorithm,
         value: algorithm,
         onChanged: (DetectionAlgorithm? val) async {
@@ -32,7 +32,7 @@ class SelectAlgorithmPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: Text(
+          title: const Text(
             'Pitch Detection Algorithm',
             style: TextStyle(fontSize: 24),
           ),

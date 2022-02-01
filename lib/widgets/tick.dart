@@ -13,9 +13,9 @@ class Tick extends StatelessWidget {
         child: Align(
           alignment: Alignment.center,
           child: Container(
-            width: this.width,
-            height: this.height * constraints.maxHeight,
-            color: this.color,
+            width: width,
+            height: height * constraints.maxHeight,
+            color: color,
           ),
         ),
       );

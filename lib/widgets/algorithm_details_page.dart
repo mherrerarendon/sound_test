@@ -11,22 +11,21 @@ class AlgorithmDetailsPage extends StatelessWidget {
       children: [
         Expanded(
             flex: 1,
-            child: Container(
-                child: FittedBox(
+            child: FittedBox(
               child: Text(_algorithm.toName(),
                   style: Theme.of(context).textTheme.headline6),
-            ))),
+            )),
         Expanded(
           flex: 3,
           child: Container(
             padding: const EdgeInsets.all(8.0),
             child: Text(
               _algorithm.description(),
-              style: TextStyle(fontSize: 30),
+              style: const TextStyle(fontSize: 30),
             ),
           ),
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
         Expanded(
             flex: 2,
             child: Container(
@@ -34,17 +33,17 @@ class AlgorithmDetailsPage extends StatelessWidget {
                   border: Border.all(
                     color: Theme.of(context).colorScheme.background,
                   ),
-                  borderRadius: BorderRadius.all(Radius.circular(20))),
+                  borderRadius: const BorderRadius.all(Radius.circular(20))),
               child: FittedBox(
                 child: Text(
                   _algorithm.instruments(),
-                  style: TextStyle(
+                  style: const TextStyle(
                       fontSize:
                           400), // The larger the fontsize the less pixelated the images look.
                 ),
               ),
             )),
-        Spacer(),
+        const Spacer(),
       ],
     );
   }

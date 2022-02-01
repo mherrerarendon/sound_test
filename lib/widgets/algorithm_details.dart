@@ -6,7 +6,7 @@ import 'package:sound_test/widgets/algorithm_details_page.dart';
 import 'package:page_view_indicators/circle_page_indicator.dart';
 
 class AlgorithmDetails extends StatefulWidget {
-  AlgorithmDetails(this.initialPage, {Key? key}) : super(key: key);
+  const AlgorithmDetails(this.initialPage, {Key? key}) : super(key: key);
   final int initialPage;
 
   @override
@@ -21,17 +21,15 @@ class _AlgorithmDetailsState extends State<AlgorithmDetails> {
   final ValueNotifier<int> _currentPageNotifier;
 
   _buildPageView() {
-    return Container(
-      child: PageView.builder(
-          itemCount: DetectionAlgorithm.values.length,
-          controller: _pageController,
-          itemBuilder: (BuildContext context, int index) {
-            return AlgorithmDetailsPage(DetectionAlgorithm.values[index]);
-          },
-          onPageChanged: (int index) {
-            _currentPageNotifier.value = index;
-          }),
-    );
+    return PageView.builder(
+        itemCount: DetectionAlgorithm.values.length,
+        controller: _pageController,
+        itemBuilder: (BuildContext context, int index) {
+          return AlgorithmDetailsPage(DetectionAlgorithm.values[index]);
+        },
+        onPageChanged: (int index) {
+          _currentPageNotifier.value = index;
+        });
   }
 
   _buildCircleIndicator() {
@@ -48,36 +46,34 @@ class _AlgorithmDetailsState extends State<AlgorithmDetails> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.of(context).pop();
             Navigator.of(context).pop();
           },
         ),
-        title: Text('Algorithm Details'),
+        title: const Text('Algorithm Details'),
       ),
       body: Column(children: [
         Expanded(child: _buildPageView()),
         _buildCircleIndicator(),
-        SizedBox(height: 16),
-        Container(
-          child: FittedBox(
-            child: ElevatedButton(
-              onPressed: () async {
-                final algorithm =
-                    DetectionAlgorithm.values[_pageController.page!.round()];
-                settings.setDetectionAlgorithm(algorithm);
-                await TunerInherited.of(context)!
-                    .tunerApi
-                    .setAlgorithm(algorithm: algorithm.toShortString());
-                Navigator.pop(context);
-                Navigator.pop(context);
-              },
-              child: const Text('Select', style: TextStyle(fontSize: 30)),
-            ),
+        const SizedBox(height: 16),
+        FittedBox(
+          child: ElevatedButton(
+            onPressed: () async {
+              final algorithm =
+                  DetectionAlgorithm.values[_pageController.page!.round()];
+              settings.setDetectionAlgorithm(algorithm);
+              await TunerInherited.of(context)!
+                  .tunerApi
+                  .setAlgorithm(algorithm: algorithm.toShortString());
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
+            child: const Text('Select', style: TextStyle(fontSize: 30)),
           ),
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
       ]),
     );
   }

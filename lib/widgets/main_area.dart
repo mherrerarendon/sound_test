@@ -13,18 +13,18 @@ class MainArea extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        _debug ? DebugPartialDesc() : Container(),
-        Expanded(flex: 5, child: PlayedPitch()),
-        SizedBox(height: 20),
-        Expanded(
+        _debug ? const DebugPartialDesc() : Container(),
+        const Expanded(flex: 5, child: PlayedPitch()),
+        const SizedBox(height: 20),
+        const Expanded(
           flex: 1,
           child: CentsRuler(),
         ),
-        Expanded(
+        const Expanded(
           flex: 2,
           child: PitchPointer(),
         ),
-        SizedBox(height: 40),
+        const SizedBox(height: 40),
       ],
     );
   }
