@@ -6,25 +6,19 @@ import 'package:sound_test/widgets/algorithm_details_page.dart';
 import 'package:page_view_indicators/circle_page_indicator.dart';
 
 class AlgorithmDetails extends StatefulWidget {
-  AlgorithmDetails({Key? key}) : super(key: key);
+  AlgorithmDetails(this.initialPage, {Key? key}) : super(key: key);
+  final int initialPage;
 
   @override
-  State<AlgorithmDetails> createState() => _AlgorithmDetailsState();
+  State<AlgorithmDetails> createState() => _AlgorithmDetailsState(initialPage);
 }
 
 class _AlgorithmDetailsState extends State<AlgorithmDetails> {
-  late PageController _pageController = PageController();
-  late ValueNotifier<int> _currentPageNotifier = ValueNotifier<int>(0);
-
-  @override
-  void initState() {
-    super.initState();
-    final SettingsModel settings = Provider.of<SettingsModel>(context);
-    _currentPageNotifier =
-        ValueNotifier<int>(settings.detectionAlgorithm.index);
-    _pageController =
-        PageController(initialPage: settings.detectionAlgorithm.index);
-  }
+  _AlgorithmDetailsState(int initialPage)
+      : _pageController = PageController(initialPage: initialPage),
+        _currentPageNotifier = ValueNotifier<int>(initialPage);
+  final PageController _pageController;
+  final ValueNotifier<int> _currentPageNotifier;
 
   _buildPageView() {
     return Container(
@@ -53,11 +47,19 @@ class _AlgorithmDetailsState extends State<AlgorithmDetails> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pop();
+            Navigator.of(context).pop();
+          },
+        ),
         title: Text('Algorithm Details'),
       ),
       body: Column(children: [
         Expanded(child: _buildPageView()),
         _buildCircleIndicator(),
+        SizedBox(height: 16),
         Container(
           child: FittedBox(
             child: ElevatedButton(
@@ -75,6 +77,7 @@ class _AlgorithmDetailsState extends State<AlgorithmDetails> {
             ),
           ),
         ),
+        SizedBox(height: 16),
       ]),
     );
   }

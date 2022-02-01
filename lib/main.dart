@@ -4,14 +4,19 @@ import 'package:provider/provider.dart';
 import 'package:sound_test/models/partials_model.dart';
 import 'package:sound_test/models/settings_model.dart';
 import 'package:sound_test/widgets/tuner_inhereted_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+  final algorithmIdx = prefs.getInt(kSharedPreferencesAlgorithmKey) ??
+      SettingsModel.defaultAlgorithm.index;
   runApp(MultiProvider(providers: [
     ChangeNotifierProvider(
       create: (_) => PartialsModel(),
     ),
     ChangeNotifierProvider(
-      create: (_) => SettingsModel(),
+      create: (_) => SettingsModel(algorithmIdx),
     ),
   ], child: TunerInherited(child: const MyApp())));
 }

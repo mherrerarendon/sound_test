@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+const String kSharedPreferencesAlgorithmKey = 'algorithm';
 enum DetectionAlgorithm {
   power,
   autocorrelation,
@@ -49,18 +51,24 @@ extension ParseToString on DetectionAlgorithm {
       case 0:
         return '🎻🎺🎷';
       case 1:
-        return '🎻🎺🎷';
+        return '🦗';
       default:
-        return _kCepstrumDescription;
+        return '🦗';
     }
   }
 }
 
 class SettingsModel extends ChangeNotifier {
-  DetectionAlgorithm _detectionAlgorithm = DetectionAlgorithm.autocorrelation;
+  SettingsModel(initialAlgorithm) {
+    _detectionAlgorithm = DetectionAlgorithm.values[initialAlgorithm];
+  }
+  late DetectionAlgorithm _detectionAlgorithm;
 
   DetectionAlgorithm get detectionAlgorithm => _detectionAlgorithm;
+  static DetectionAlgorithm get defaultAlgorithm => DetectionAlgorithm.power;
   void setDetectionAlgorithm(DetectionAlgorithm value) {
+    SharedPreferences.getInstance().then(
+        (prefs) => prefs.setInt(kSharedPreferencesAlgorithmKey, value.index));
     _detectionAlgorithm = value;
     notifyListeners();
   }

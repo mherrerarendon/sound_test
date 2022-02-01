@@ -29,23 +29,22 @@ class AlgorithmDetailsPage extends StatelessWidget {
         SizedBox(height: 10),
         Expanded(
             flex: 2,
-            child: Card(
-              child: Container(
-                decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.background,
-                    ),
-                    borderRadius: BorderRadius.all(Radius.circular(20))),
-                child: FittedBox(
-                  child: Text(
-                    _algorithm.instruments(),
-                    style: TextStyle(
-                        fontSize:
-                            400), // The larger the fontsize the less pixelated the images look.
+            child: Container(
+              decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.background,
                   ),
+                  borderRadius: BorderRadius.all(Radius.circular(20))),
+              child: FittedBox(
+                child: Text(
+                  _algorithm.instruments(),
+                  style: TextStyle(
+                      fontSize:
+                          400), // The larger the fontsize the less pixelated the images look.
                 ),
               ),
             )),
+        Spacer(),
       ],
     );
   }

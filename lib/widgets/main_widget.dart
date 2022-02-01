@@ -24,7 +24,7 @@ class _MainWidgetState extends State<MainWidget> {
         child: SizedBox(
           height: 120.0,
           child: Padding(
-            padding: EdgeInsets.only(top: 30.0),
+            padding: EdgeInsets.only(top: 30.0, bottom: 10.0),
             child: AlgorithmButton(),
           ),
         ),
