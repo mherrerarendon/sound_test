@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sound_test/widgets/algorithm_button.dart';
 import 'package:sound_test/widgets/listen_widget.dart';
-import 'package:sound_test/widgets/main_dos.dart';
+import 'package:sound_test/widgets/main_area.dart';
 
 class MainWidget extends StatefulWidget {
   const MainWidget({Key? key}) : super(key: key);
@@ -18,7 +18,7 @@ class _MainWidgetState extends State<MainWidget> {
       appBar: AppBar(
         title: const Text('Sound Test'),
       ),
-      body: const MainDos(),
+      body: const MainArea(),
       bottomNavigationBar: const BottomAppBar(
         shape: CircularNotchedRectangle(),
         child: SizedBox(

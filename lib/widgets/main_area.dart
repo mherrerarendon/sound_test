@@ -2,14 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:sound_test/widgets/played_pitch.dart';
 import 'package:sound_test/widgets/cents_ruler.dart';
 import 'package:sound_test/widgets/pitch_pointer.dart';
+import 'package:sound_test/widgets/debug_partial_desc.dart';
 
-class MainDos extends StatelessWidget {
-  const MainDos({Key? key}) : super(key: key);
+const bool _debug = false;
+
+class MainArea extends StatelessWidget {
+  const MainArea({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: const [
+      children: [
+        _debug ? DebugPartialDesc() : Container(),
         Expanded(flex: 5, child: PlayedPitch()),
         SizedBox(height: 20),
         Expanded(
