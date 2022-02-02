@@ -26,7 +26,7 @@ impl FundamentalDetector for PowerCepstrum {
 
         self.spectrum()
             .into_iter()
-            .fft_peaks()
+            .fft_peaks(60, 10.)
             .reduce(|accum, quefrency| {
                 if quefrency.1 > accum.1 {
                     quefrency

@@ -3,21 +3,27 @@ use smoothed_z_score::{Peak, PeaksDetector, PeaksFilter};
 
 pub(crate) struct PeakIter<I: Iterator<Item = (usize, f64)>> {
     signal: I,
+    lag: usize,
+    threshold: f64,
 }
 
 pub(crate) trait FftPeaks<I>
 where
     I: Iterator<Item = (usize, f64)>,
 {
-    fn fft_peaks(self) -> PeakIter<I>;
+    fn fft_peaks(self, lag: usize, threshold: f64) -> PeakIter<I>;
 }
 
 impl<I> FftPeaks<I> for I
 where
     I: Iterator<Item = (usize, f64)>,
 {
-    fn fft_peaks(self) -> PeakIter<I> {
-        PeakIter { signal: self }
+    fn fft_peaks(self, lag: usize, threshold: f64) -> PeakIter<I> {
+        PeakIter {
+            signal: self,
+            lag,
+            threshold,
+        }
     }
 }
 
@@ -32,12 +38,14 @@ where
         let (x_vals, y_vals): (Vec<f64>, Vec<f64>) = self
             .signal
             .by_ref()
-            .peaks(PeaksDetector::new(60, 10.0, 0.0), |e| e.1)
+            .peaks(PeaksDetector::new(self.lag, self.threshold, 0.0), |e| e.1)
             .skip_while(|(_, peak)| *peak == Peak::None)
             .take_while(|(_, peak)| *peak == Peak::High)
             .map(|(quefrency, _)| (quefrency.0 as f64, quefrency.1))
             .unzip();
 
+        // Useful for debugging
+        // println!("{:?}", x_vals);
         match x_vals.len() {
             0 => None,
             1 => Some((x_vals[0], y_vals[0])),
