@@ -1,13 +1,13 @@
 use crate::{
     api::Partial,
     constants::{
-        AUTOCORRELATION_ALGORITHM, COMPLEX_CEPSTRUM_ALGORITHM, MARCO_ALGORITHM,
-        POWER_CEPSTRUM_ALGORITHM,
+        AUTOCORRELATION_ALGORITHM, COMPLEX_CEPSTRUM_ALGORITHM, POWER_CEPSTRUM_ALGORITHM,
+        RAW_FFT_ALGORITHM,
     },
     detectors::{
         autocorrelation,
         cepstrum::{complex, power},
-        marco_detector, Detector, FundamentalDetector,
+        raw_fft, Detector, FundamentalDetector,
     },
     utils::{audio_buffer_to_signal, calc_optimized_fft_space_size},
     TunerError,
@@ -61,9 +61,9 @@ impl Tuner {
                 POWER_CEPSTRUM_ALGORITHM => {
                     Detector::PowerCepstrum(power::PowerCepstrum::new(optimized_fft_space_size))
                 }
-                MARCO_ALGORITHM => Detector::MarcoDetector(marco_detector::MarcoDetector::new(
-                    optimized_fft_space_size,
-                )),
+                RAW_FFT_ALGORITHM => {
+                    Detector::RawFftDetector(raw_fft::RawFftDetector::new(optimized_fft_space_size))
+                }
                 AUTOCORRELATION_ALGORITHM => Detector::AutocorrelationDetector(
                     autocorrelation::AutocorrelationDetector::new(optimized_fft_space_size),
                 ),
@@ -79,8 +79,8 @@ impl Tuner {
 
     pub fn set_algorithm(&mut self, algorithm: &str) -> Result<()> {
         match algorithm {
-            MARCO_ALGORITHM => {
-                self.detector = Detector::MarcoDetector(marco_detector::MarcoDetector::new(
+            RAW_FFT_ALGORITHM => {
+                self.detector = Detector::RawFftDetector(raw_fft::RawFftDetector::new(
                     self.optimized_fft_space_size,
                 ));
                 Ok(())

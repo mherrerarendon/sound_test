@@ -14,7 +14,7 @@ impl FundamentalDetector for ComplexCepstrum {
     fn detect_fundamental(&mut self, signal: &[f64]) -> Result<Partial> {
         let mut planner = FftPlanner::new();
         let forward_fft = planner.plan_fft_forward(self.fft_space.len());
-        self.fft_space.init_fft_space(signal);
+        self.fft_space.init_fft_space(signal.iter().cloned());
 
         let (fft_space, scratch) = self.fft_space.workspace();
         forward_fft.process_with_scratch(fft_space, scratch);

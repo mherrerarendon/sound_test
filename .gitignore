@@ -50,8 +50,10 @@ ios/Runner/api.h
 ios/Runner/libtuner_rs.a
 lib/api.dart
 tuner-rs/src/bridge_generated.rs
+android/app/src/main/jniLibs/
 
 # Rust related
 tuner-rs/target
 tuner-rs/Cargo.lock
 smoothed_z_score/
+

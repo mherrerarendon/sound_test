@@ -62,16 +62,14 @@ impl FftSpace {
         (&mut self.space, &mut self.scratch)
     }
 
-    pub fn init_fft_space(&mut self, signal: &[f64]) {
-        assert!(signal.len() <= self.space.len());
-        signal
-            .iter()
-            .zip(self.space.iter_mut())
-            .for_each(|(sample, fft)| {
-                fft.re = *sample;
-                fft.im = 0.0;
-            });
-        self.space[signal.len()..]
+    pub fn init_fft_space<I: Iterator<Item = f64>>(&mut self, signal: I) {
+        let signal_len = signal.size_hint().1.unwrap();
+        assert!(signal_len <= self.space.len());
+        signal.zip(self.space.iter_mut()).for_each(|(sample, fft)| {
+            fft.re = sample;
+            fft.im = 0.0;
+        });
+        self.space[signal_len..]
             .iter_mut()
             .for_each(|o| *o = Complex::zero())
     }
