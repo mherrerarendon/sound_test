@@ -54,9 +54,9 @@ extension ParseToString on DetectionAlgorithm {
   String instruments() {
     switch (index) {
       case 0:
-        return '🎻🎺🎷';
+        return '💰';
       case 1:
-        return '🦗';
+        return '✨';
       case 2:
         return '🦗';
       default:
