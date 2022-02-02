@@ -1,71 +1,10 @@
 use crate::{
     api::Partial,
     constants::*,
-    detectors::{fft_space::FftSpace, FundamentalDetector},
+    detectors::{fft_space::FftSpace, peak_iter::FftPeaks, FundamentalDetector},
 };
 use anyhow::Result;
-use fitting::gaussian::fit;
 use rustfft::{num_complex::Complex, FftPlanner};
-use smoothed_z_score::{Peak, PeaksDetector, PeaksFilter};
-
-struct CepstrumPeakIter<I: Iterator<Item = (usize, f64)>> {
-    signal: I,
-}
-
-trait CepstrumPeaks<I>
-where
-    I: Iterator<Item = (usize, f64)>,
-{
-    fn cepstrum_peaks(self) -> CepstrumPeakIter<I>;
-}
-
-impl<I> CepstrumPeaks<I> for I
-where
-    I: Iterator<Item = (usize, f64)>,
-{
-    fn cepstrum_peaks(self) -> CepstrumPeakIter<I> {
-        CepstrumPeakIter { signal: self }
-    }
-}
-
-impl<I> Iterator for CepstrumPeakIter<I>
-where
-    I: Iterator<Item = (usize, f64)>,
-{
-    // mu, sigma, a
-    type Item = (f64, f64);
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let (x_vals, y_vals): (Vec<f64>, Vec<f64>) = self
-            .signal
-            .by_ref()
-            .peaks(PeaksDetector::new(60, 10.0, 0.0), |e| e.1)
-            .skip_while(|(_, peak)| *peak == Peak::None)
-            .take_while(|(_, peak)| *peak == Peak::High)
-            .map(|(quefrency, _)| (quefrency.0 as f64, quefrency.1))
-            .unzip();
-
-        match x_vals.len() {
-            0 => None,
-            1 => Some((x_vals[0], y_vals[0])),
-            2 => {
-                if y_vals[0] > y_vals[1] {
-                    Some((x_vals[0], y_vals[0]))
-                } else {
-                    Some((x_vals[1], y_vals[1]))
-                }
-            }
-            _ => {
-                if let Ok((mu, _, amplitude)) = fit(x_vals.into(), y_vals.into()) {
-                    Some((mu, amplitude))
-                } else {
-                    assert!(false, "should not get here");
-                    None
-                }
-            }
-        }
-    }
-}
 
 pub struct PowerCepstrum {
     fft_space: FftSpace,
@@ -87,7 +26,7 @@ impl FundamentalDetector for PowerCepstrum {
 
         self.spectrum()
             .into_iter()
-            .cepstrum_peaks()
+            .fft_peaks()
             .reduce(|accum, quefrency| {
                 if quefrency.1 > accum.1 {
                     quefrency

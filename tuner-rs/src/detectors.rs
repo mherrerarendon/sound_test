@@ -3,6 +3,7 @@ pub mod cepstrum;
 pub mod raw_fft;
 
 mod fft_space;
+mod peak_iter;
 
 use crate::api::Partial;
 use anyhow::Result;

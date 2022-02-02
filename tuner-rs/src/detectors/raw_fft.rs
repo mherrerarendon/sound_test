@@ -6,6 +6,8 @@ use crate::{
 use anyhow::Result;
 use rustfft::FftPlanner;
 
+use super::peak_iter::FftPeaks;
+
 pub struct RawFftDetector {
     fft_space: FftSpace,
 }
@@ -24,10 +26,11 @@ impl FundamentalDetector for RawFftDetector {
         let (fft_space, scratch) = self.fft_space.workspace();
         fft.process_with_scratch(fft_space, scratch);
         self.spectrum()
-            .iter()
+            .into_iter()
+            .fft_peaks()
             .reduce(|accum, item| if item.1 > accum.1 { item } else { accum })
             .map(|item| Partial {
-                freq: item.0 as f64 * SAMPLE_RATE / self.fft_space.len() as f64,
+                freq: item.0 * SAMPLE_RATE / self.fft_space.len() as f64,
                 intensity: item.1,
             })
             .ok_or(anyhow::anyhow!("Failed to detect fundamental with raw fft"))
