@@ -1,14 +1,7 @@
 use crate::{
     api::Partial,
-    constants::{
-        AUTOCORRELATION_ALGORITHM, COMPLEX_CEPSTRUM_ALGORITHM, POWER_CEPSTRUM_ALGORITHM,
-        RAW_FFT_ALGORITHM,
-    },
-    detectors::{
-        autocorrelation,
-        cepstrum::{complex, power},
-        raw_fft, Detector, FundamentalDetector,
-    },
+    constants::{AUTOCORRELATION_ALGORITHM, POWER_CEPSTRUM_ALGORITHM, RAW_FFT_ALGORITHM},
+    detectors::{autocorrelation, cepstrum, raw_fft, Detector, FundamentalDetector},
     utils::{audio_buffer_to_signal, calc_optimized_fft_space_size},
     TunerError,
 };
@@ -55,11 +48,8 @@ impl Tuner {
         Self {
             optimized_fft_space_size,
             detector: match algorithm {
-                COMPLEX_CEPSTRUM_ALGORITHM => Detector::ComplexCepstrum(
-                    complex::ComplexCepstrum::new(optimized_fft_space_size),
-                ),
                 POWER_CEPSTRUM_ALGORITHM => {
-                    Detector::PowerCepstrum(power::PowerCepstrum::new(optimized_fft_space_size))
+                    Detector::PowerCepstrum(cepstrum::PowerCepstrum::new(optimized_fft_space_size))
                 }
                 RAW_FFT_ALGORITHM => {
                     Detector::RawFftDetector(raw_fft::RawFftDetector::new(optimized_fft_space_size))
@@ -85,14 +75,8 @@ impl Tuner {
                 ));
                 Ok(())
             }
-            COMPLEX_CEPSTRUM_ALGORITHM => {
-                self.detector = Detector::ComplexCepstrum(complex::ComplexCepstrum::new(
-                    self.optimized_fft_space_size,
-                ));
-                Ok(())
-            }
             POWER_CEPSTRUM_ALGORITHM => {
-                self.detector = Detector::PowerCepstrum(power::PowerCepstrum::new(
+                self.detector = Detector::PowerCepstrum(cepstrum::PowerCepstrum::new(
                     self.optimized_fft_space_size,
                 ));
                 Ok(())
@@ -126,11 +110,11 @@ mod tests {
 
         tuner_init(AUTOCORRELATION_ALGORITHM, buffer.len() / 2);
         let partial = tuner_detect_pitch(&buffer)?;
-        assert!(partial.freq.approx_eq(218.543, (0.02, 2)));
+        assert!(partial.freq.approx_eq(219.634, (0.02, 2)));
 
-        tuner_set_algorithm(COMPLEX_CEPSTRUM_ALGORITHM)?;
+        tuner_set_algorithm(POWER_CEPSTRUM_ALGORITHM)?;
         let partial = tuner_detect_pitch(&buffer)?;
-        assert!(partial.freq.approx_eq(218.905, (0.02, 2)));
+        assert!(partial.freq.approx_eq(219.418, (0.02, 2)));
 
         Ok(())
     }

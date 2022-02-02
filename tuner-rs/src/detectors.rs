@@ -1,16 +1,14 @@
 pub mod autocorrelation;
 pub mod cepstrum;
-mod fft_space;
 pub mod raw_fft;
-// pub mod mcleod;
+
+mod fft_space;
 
 use crate::api::Partial;
 use anyhow::Result;
 
 use self::{
-    autocorrelation::AutocorrelationDetector,
-    cepstrum::{complex::ComplexCepstrum, power::PowerCepstrum},
-    raw_fft::RawFftDetector,
+    autocorrelation::AutocorrelationDetector, cepstrum::PowerCepstrum, raw_fft::RawFftDetector,
 };
 use enum_dispatch::enum_dispatch;
 
@@ -27,7 +25,6 @@ pub trait FundamentalDetector {
 #[enum_dispatch(FundamentalDetector)]
 pub enum Detector {
     RawFftDetector,
-    ComplexCepstrum,
     PowerCepstrum,
     AutocorrelationDetector,
 }

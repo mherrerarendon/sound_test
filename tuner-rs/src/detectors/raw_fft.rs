@@ -68,7 +68,6 @@ mod tests {
     fn test_raw_fft() -> anyhow::Result<()> {
         let mut detector = RawFftDetector::new(TEST_FFT_SPACE_SIZE);
 
-        test_fundamental_freq(&mut detector, "tuner_c5.json", 523.681)?;
         test_fundamental_freq(&mut detector, "cello_open_a.json", 218.872)?;
         test_fundamental_freq(&mut detector, "cello_open_d.json", 146.362)?;
         test_fundamental_freq(&mut detector, "cello_open_g.json", 96.679)?;
