@@ -66,7 +66,7 @@ impl FundamentalDetector for AutocorrelationDetector {
     fn detect_fundamental(&mut self, signal: &[f64]) -> Result<Partial> {
         let mut planner = FftPlanner::new();
         let forward_fft = planner.plan_fft_forward(self.fft_space.len());
-        self.fft_space.init_fft_space(signal);
+        self.fft_space.init_fft_space(signal.iter().cloned());
 
         let (fft_space, scratch) = self.fft_space.workspace();
         forward_fft.process_with_scratch(fft_space, scratch);
@@ -130,13 +130,12 @@ mod tests {
     #[test]
     fn test_autocorrelation() -> anyhow::Result<()> {
         let mut detector = AutocorrelationDetector::new(TEST_FFT_SPACE_SIZE);
-        test_fundamental_freq(&mut detector, "noise.json", 59.818)?;
 
-        test_fundamental_freq(&mut detector, "tuner_c5.json", 523.537)?;
-        test_fundamental_freq(&mut detector, "cello_open_a.json", 218.543)?;
-        test_fundamental_freq(&mut detector, "cello_open_d.json", 146.230)?;
-        test_fundamental_freq(&mut detector, "cello_open_g.json", 97.767)?;
-        test_fundamental_freq(&mut detector, "cello_open_c.json", 64.440)?;
+        test_fundamental_freq(&mut detector, "tuner_c5.json", 529.841)?;
+        test_fundamental_freq(&mut detector, "cello_open_a.json", 219.634)?;
+        test_fundamental_freq(&mut detector, "cello_open_d.json", 146.717)?;
+        test_fundamental_freq(&mut detector, "cello_open_g.json", 97.985)?;
+        test_fundamental_freq(&mut detector, "cello_open_c.json", 64.535)?;
         Ok(())
     }
 }
