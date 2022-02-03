@@ -1,11 +1,9 @@
 PODS:
   - Flutter (1.0.0)
-  - flutter_sound (8.4.2):
+  - flutter_sound (9.1.2):
     - Flutter
-    - flutter_sound_core (= 8.4.2)
-    - mobile-ffmpeg-audio (= 4.4.LTS)
-  - flutter_sound_core (8.4.2)
-  - mobile-ffmpeg-audio (4.4.LTS)
+    - flutter_sound_core (= 9.1.2)
+  - flutter_sound_core (9.1.2)
   - path_provider_ios (0.0.1):
     - Flutter
   - shared_preferences_ios (0.0.1):
@@ -23,7 +21,6 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - flutter_sound_core
-    - mobile-ffmpeg-audio
 
 EXTERNAL SOURCES:
   Flutter:
@@ -39,9 +36,8 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
-  flutter_sound: db1364f901b96c17e00101c831994487186afdf4
-  flutter_sound_core: 55a1665e7ef8cdb95ab9dd06581c746dd9c96e48
-  mobile-ffmpeg-audio: 1e0a053f8a6de57114e50ff48b3a85ff1c60f902
+  flutter_sound: a76214c89a5debb0307bb653c364c5ec2fed8cba
+  flutter_sound_core: b31694f619cd74a09744a7e392f5a50e7004c6ef
   path_provider_ios: 7d7ce634493af4477d156294792024ec3485acd5
   shared_preferences_ios: aef470a42dc4675a1cdd50e3158b42e3d1232b32
   wakelock: d0fc7c864128eac40eba1617cb5264d9c940b46f
