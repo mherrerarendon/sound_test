@@ -39,6 +39,7 @@ dependencies:
   wakelock: ^0.6.1
   page_view_indicators: ^2.0.0
   shared_preferences: ^2.0.12
+  permission_handler: ^8.3.0
 
 dev_dependencies:
   flutter_test:

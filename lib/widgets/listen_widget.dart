@@ -6,6 +6,7 @@ import 'package:sound_test/models/settings_model.dart';
 import 'package:sound_test/widgets/tuner_inhereted_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:wakelock/wakelock.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 const int tSampleRate = 44000;
 const int tNumChannels = 1;
@@ -35,6 +36,10 @@ class _ListenWidgetState extends State<ListenWidget> {
   StreamSubscription? _mRecordingDataSubscription;
 
   Future<void> _openRecorder() async {
+    var status = await Permission.microphone.request();
+    if (status != PermissionStatus.granted) {
+      throw RecordingPermissionException('Microphone permission not granted');
+    }
     Wakelock.enable();
     await _mRecorder!.openRecorder();
     final tuner = TunerInherited.of(context)!.tunerApi;
