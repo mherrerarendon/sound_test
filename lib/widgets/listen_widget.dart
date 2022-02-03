@@ -36,7 +36,7 @@ class _ListenWidgetState extends State<ListenWidget> {
 
   Future<void> _openRecorder() async {
     Wakelock.enable();
-    await _mRecorder!.openAudioSession();
+    await _mRecorder!.openRecorder();
     final tuner = TunerInherited.of(context)!.tunerApi;
     final detectionAlgorithm =
         Provider.of<SettingsModel>(context, listen: false)
@@ -85,7 +85,7 @@ class _ListenWidgetState extends State<ListenWidget> {
   @override
   void dispose() {
     stopRecorder();
-    _mRecorder!.closeAudioSession();
+    _mRecorder!.closeRecorder();
     _mRecorder = null;
     super.dispose();
   }
