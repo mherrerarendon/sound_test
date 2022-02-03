@@ -9,7 +9,6 @@ edition = "2021"
 flutter_rust_bridge = "1.10.0"
 anyhow = "1.0.52"
 rustfft = "6.0.1"
-pitch-detection = "0.2.0"
 num-traits = { version = "0.2", default-features = false }
 enum_dispatch = "0.3.7"
 lazy_static = "1.4.0"
