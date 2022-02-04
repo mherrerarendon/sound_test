@@ -1,6 +1,6 @@
 use flutter_rust_bridge::StreamSink;
 
-use crate::tuner::{tuner_change_algorithm, tuner_init, tuner_new_audio_data};
+use crate::tuner::{tuner_change_algorithm, tuner_init, tuner_init_stream, tuner_new_audio_data};
 
 #[derive(Debug, Clone)]
 pub struct Partial {
@@ -18,13 +18,16 @@ impl Default for Partial {
 }
 
 pub fn change_algorithm(algorithm: String) -> anyhow::Result<()> {
-    tuner_change_algorithm(&algorithm)?;
+    tuner_change_algorithm(&algorithm)
+}
+
+pub fn init_tuner(algorithm: String) -> anyhow::Result<()> {
+    tuner_init(&algorithm);
     Ok(())
 }
 
-pub fn init_tuner(sink: StreamSink<Partial>, algorithm: String) -> anyhow::Result<()> {
-    tuner_init(sink, &algorithm);
-    Ok(())
+pub fn init_stream(sink: StreamSink<Partial>) -> anyhow::Result<()> {
+    tuner_init_stream(sink)
 }
 
 pub fn new_audio_data(byte_buffer: Vec<u8>) -> anyhow::Result<()> {

@@ -15,7 +15,7 @@ use enum_dispatch::enum_dispatch;
 
 #[enum_dispatch]
 pub trait FundamentalDetector {
-    fn detect_fundamental<I: IntoIterator>(&mut self, signal: I) -> Result<Partial>
+    fn detect_fundamental<I: IntoIterator>(&mut self, signal: I) -> Option<Partial>
     where
         <I as IntoIterator>::Item: std::borrow::Borrow<f64>;
 

@@ -108,7 +108,9 @@ pub mod test_utils {
         // Sanity check
         assert_eq!(fft_space_size, TEST_FFT_SPACE_SIZE);
 
-        let partial = detector.detect_fundamental(&signal)?;
+        let partial = detector
+            .detect_fundamental(&signal)
+            .ok_or(anyhow::anyhow!("Did not get pitch"))?;
 
         if PLOT {
             let spectrum = detector.spectrum();

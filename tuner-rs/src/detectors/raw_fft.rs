@@ -14,7 +14,7 @@ pub struct RawFftDetector {
 }
 
 impl FundamentalDetector for RawFftDetector {
-    fn detect_fundamental<I: IntoIterator>(&mut self, signal: I) -> Result<Partial>
+    fn detect_fundamental<I: IntoIterator>(&mut self, signal: I) -> Option<Partial>
     where
         <I as IntoIterator>::Item: std::borrow::Borrow<f64>,
     {
@@ -24,7 +24,7 @@ impl FundamentalDetector for RawFftDetector {
         let signal_size = signal_iter
             .size_hint()
             .1
-            .ok_or(anyhow::anyhow!("Failed to get size hint for signal"))?;
+            .expect("Failed to get size hint for signal");
         self.fft_space.init_fft_space(
             signal_iter
                 .zip(apodize::hanning_iter(signal_size))
@@ -41,7 +41,6 @@ impl FundamentalDetector for RawFftDetector {
                 freq: item.0 * SAMPLE_RATE / self.fft_space.len() as f64,
                 intensity: item.1,
             })
-            .ok_or(anyhow::anyhow!("Failed to detect fundamental with raw fft"))
     }
 
     fn spectrum(&self) -> Vec<(usize, f64)> {

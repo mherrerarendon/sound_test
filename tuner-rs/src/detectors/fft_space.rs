@@ -68,7 +68,10 @@ impl FftSpace {
         <I as IntoIterator>::Item: std::borrow::Borrow<f64>,
     {
         let signal_iter = signal.into_iter();
-        let signal_len = signal_iter.size_hint().1.unwrap();
+        let signal_len = signal_iter
+            .size_hint()
+            .1
+            .expect("Signal length is not known");
         assert!(signal_len <= self.space.len());
         signal_iter
             .zip(self.space.iter_mut())

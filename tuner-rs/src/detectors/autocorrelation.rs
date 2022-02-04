@@ -63,7 +63,7 @@ pub struct AutocorrelationDetector {
 }
 
 impl FundamentalDetector for AutocorrelationDetector {
-    fn detect_fundamental<I: IntoIterator>(&mut self, signal: I) -> Result<Partial>
+    fn detect_fundamental<I: IntoIterator>(&mut self, signal: I) -> Option<Partial>
     where
         <I as IntoIterator>::Item: std::borrow::Borrow<f64>,
     {
@@ -90,9 +90,6 @@ impl FundamentalDetector for AutocorrelationDetector {
                     accum
                 }
             })
-            .ok_or(anyhow::anyhow!(
-                "Failed to detect fundamental with autocorrelation"
-            ))
     }
 
     fn spectrum(&self) -> Vec<(usize, f64)> {

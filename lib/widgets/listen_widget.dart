@@ -40,9 +40,9 @@ class _ListenWidgetState extends State<ListenWidget> {
     final tuner = TunerInherited.of(context)!.tunerApi;
     var recordingDataController = StreamController<Food>();
     _mRecordingDataSubscription =
-        recordingDataController.stream.listen((buffer) {
+        recordingDataController.stream.listen((buffer) async {
       if (buffer is FoodData) {
-        tuner.newAudioData(byteBuffer: buffer.data!);
+        await tuner.newAudioData(byteBuffer: buffer.data!);
       }
     });
     await _mRecorder!.startRecorder(

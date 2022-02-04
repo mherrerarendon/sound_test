@@ -11,7 +11,7 @@ pub struct PowerCepstrum {
 }
 
 impl FundamentalDetector for PowerCepstrum {
-    fn detect_fundamental<I: IntoIterator>(&mut self, signal: I) -> Result<Partial>
+    fn detect_fundamental<I: IntoIterator>(&mut self, signal: I) -> Option<Partial>
     where
         <I as IntoIterator>::Item: std::borrow::Borrow<f64>,
     {
@@ -41,9 +41,6 @@ impl FundamentalDetector for PowerCepstrum {
                 freq: SAMPLE_RATE / mu,
                 intensity: amplitude,
             })
-            .ok_or(anyhow::anyhow!(
-                "Failed to detect fundamental with power cepstrum"
-            ))
     }
 
     fn spectrum(&self) -> Vec<(usize, f64)> {
