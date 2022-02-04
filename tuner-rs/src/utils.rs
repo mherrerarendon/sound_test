@@ -1,7 +1,14 @@
 pub fn audio_buffer_to_signal(byte_buffer: &[u8]) -> Vec<f64> {
+    audio_buffer_to_samples(byte_buffer)
+        .into_iter()
+        .map(|x| x as f64)
+        .collect()
+}
+
+pub fn audio_buffer_to_samples(byte_buffer: &[u8]) -> Vec<i16> {
     byte_buffer
         .chunks_exact(2)
-        .map(|a| i16::from_ne_bytes([a[0], a[1]]) as f64)
+        .map(|a| i16::from_ne_bytes([a[0], a[1]]))
         .collect()
 }
 

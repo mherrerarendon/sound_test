@@ -11,7 +11,10 @@ pub struct PowerCepstrum {
 }
 
 impl FundamentalDetector for PowerCepstrum {
-    fn detect_fundamental(&mut self, signal: &[f64]) -> Result<Partial> {
+    fn detect_fundamental<I: IntoIterator>(&mut self, signal: I) -> Result<Partial>
+    where
+        <I as IntoIterator>::Item: std::borrow::Borrow<f64>,
+    {
         let mut planner = FftPlanner::new();
         let forward_fft = planner.plan_fft_forward(self.fft_space.len());
         self.fft_space.init_fft_space(signal);
