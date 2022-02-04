@@ -1,10 +1,3 @@
-pub fn audio_buffer_to_signal(byte_buffer: &[u8]) -> Vec<f64> {
-    audio_buffer_to_samples(byte_buffer)
-        .into_iter()
-        .map(|x| x as f64)
-        .collect()
-}
-
 pub fn audio_buffer_to_samples(byte_buffer: &[u8]) -> Vec<i16> {
     byte_buffer
         .chunks_exact(2)
@@ -25,6 +18,12 @@ pub fn calc_optimized_fft_space_size(num_samples: usize) -> usize {
 
 #[cfg(test)]
 pub mod test_utils {
+    pub(crate) fn audio_buffer_to_signal(byte_buffer: &[u8]) -> Vec<f64> {
+        audio_buffer_to_samples(byte_buffer)
+            .into_iter()
+            .map(|x| x as f64)
+            .collect()
+    }
     use crate::detectors::FundamentalDetector;
     use float_cmp::ApproxEq;
 

@@ -38,30 +38,11 @@ class _ListenWidgetState extends State<ListenWidget> {
     Wakelock.enable();
     await _mRecorder!.openRecorder();
     final tuner = TunerInherited.of(context)!.tunerApi;
-    final detectionAlgorithm =
-        Provider.of<SettingsModel>(context, listen: false)
-            .detectionAlgorithm
-            .toShortString();
-    await tuner.initTuner(
-        algorithm: detectionAlgorithm, numSamples: (tBufferSize / 2).round());
     var recordingDataController = StreamController<Food>();
     _mRecordingDataSubscription =
-        recordingDataController.stream.listen((buffer) async {
+        recordingDataController.stream.listen((buffer) {
       if (buffer is FoodData) {
-        try {
-          final fundamental = await tuner.detectPitch(byteBuffer: buffer.data!);
-          if (fundamental.freq > tMinFrequency &&
-              fundamental.freq < tMaxFrequency) {
-            if ((detectionAlgorithm == 'autocorrelation' &&
-                    fundamental.intensity > .9) ||
-                (detectionAlgorithm != 'autocorrelation')) {
-              Provider.of<PartialsModel>(context, listen: false)
-                  .setNewFundamental(fundamental);
-            }
-          }
-        } catch (err) {
-          debugPrint('Caught error: $err');
-        }
+        tuner.newAudioData(byteBuffer: buffer.data!);
       }
     });
     await _mRecorder!.startRecorder(
