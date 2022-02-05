@@ -1,10 +1,7 @@
 import 'dart:async';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:flutter/material.dart';
-import 'package:sound_test/models/partials_model.dart';
-import 'package:sound_test/models/settings_model.dart';
 import 'package:sound_test/widgets/tuner_inhereted_widget.dart';
-import 'package:provider/provider.dart';
 import 'package:wakelock/wakelock.dart';
 import 'dart:io';
 import 'package:permission_handler/permission_handler.dart';

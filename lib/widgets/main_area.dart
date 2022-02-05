@@ -6,7 +6,6 @@ import 'package:sound_test/widgets/pitch_pointer.dart';
 import 'package:sound_test/widgets/debug_partial_desc.dart';
 import 'package:sound_test/widgets/tuner_inhereted_widget.dart';
 import 'package:sound_test/models/partials_model.dart';
-import 'dart:async';
 
 const bool _debug = false;
 
@@ -15,41 +14,6 @@ class MainArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Stream<Partial> _bids = (() {
-      late final StreamController<Partial> controller;
-      controller = StreamController<Partial>(
-        onListen: () async {
-          await Future<void>.delayed(const Duration(seconds: 1));
-          controller.add(Partial(freq: 440, intensity: 1));
-          await Future<void>.delayed(const Duration(seconds: 1));
-          controller.add(Partial(freq: 441, intensity: 1));
-          await Future<void>.delayed(const Duration(seconds: 1));
-          controller.add(Partial(freq: 442, intensity: 1));
-          await Future<void>.delayed(const Duration(seconds: 1));
-          controller.add(Partial(freq: 440, intensity: 1));
-          await Future<void>.delayed(const Duration(seconds: 1));
-          controller.add(Partial(freq: 441, intensity: 1));
-          await Future<void>.delayed(const Duration(seconds: 1));
-          controller.add(Partial(freq: 442, intensity: 1));
-          await Future<void>.delayed(const Duration(seconds: 1));
-          controller.add(Partial(freq: 440, intensity: 1));
-          await Future<void>.delayed(const Duration(seconds: 1));
-          controller.add(Partial(freq: 441, intensity: 1));
-          await Future<void>.delayed(const Duration(seconds: 1));
-          controller.add(Partial(freq: 442, intensity: 1));
-          await Future<void>.delayed(const Duration(seconds: 1));
-          controller.add(Partial(freq: 440, intensity: 1));
-          await Future<void>.delayed(const Duration(seconds: 1));
-          controller.add(Partial(freq: 441, intensity: 1));
-          await Future<void>.delayed(const Duration(seconds: 1));
-          controller.add(Partial(freq: 442, intensity: 1));
-          await Future<void>.delayed(const Duration(seconds: 1));
-          await controller.close();
-        },
-      );
-      return controller.stream;
-    })();
-
     final tuner = TunerInherited.of(context)!;
     return StreamBuilder<Partial>(
         // stream: _bids,

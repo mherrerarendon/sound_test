@@ -6,13 +6,16 @@ import 'package:sound_test/widgets/tuner_inhereted_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sound_test/api.dart';
 import 'dart:ffi';
+import 'dart:io';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
   final algorithmIdx = prefs.getInt(kSharedPreferencesAlgorithmKey) ??
       SettingsModel.defaultAlgorithm.index;
-  final tunerApi = TunerRs(DynamicLibrary.process());
+  final TunerRs tunerApi = TunerRs(Platform.isAndroid
+      ? DynamicLibrary.open('libtuner_rs.so')
+      : DynamicLibrary.process());
   await tunerApi.initTuner(
       algorithm: DetectionAlgorithm.values[algorithmIdx].toShortString());
   runApp(MultiProvider(providers: [

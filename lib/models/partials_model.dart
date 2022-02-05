@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
 import 'package:sound_test/api.dart';
 
 const kA4Freq = 440.0;
@@ -26,7 +25,7 @@ const kA4Index = 12 * 4;
 
 class PartialsModel {
   PartialsModel(this._partial);
-  Partial _partial = Partial(freq: kA4Freq, intensity: 1.0);
+  final Partial _partial;
 
   double get freq => _partial.freq;
   double get intensity => _partial.intensity;
