@@ -1,4 +1,6 @@
-use crate::tuner::{tuner_detect_pitch, tuner_init, tuner_set_algorithm};
+use flutter_rust_bridge::StreamSink;
+
+use crate::tuner::{tuner_change_algorithm, tuner_init, tuner_init_stream, tuner_new_audio_data};
 
 #[derive(Debug, Clone)]
 pub struct Partial {
@@ -15,16 +17,19 @@ impl Default for Partial {
     }
 }
 
-pub fn detect_pitch(byte_buffer: Vec<u8>) -> anyhow::Result<Partial> {
-    tuner_detect_pitch(&byte_buffer)
+pub fn change_algorithm(algorithm: String) -> anyhow::Result<()> {
+    tuner_change_algorithm(&algorithm)
 }
 
-pub fn set_algorithm(algorithm: String) -> anyhow::Result<()> {
-    tuner_set_algorithm(&algorithm)?;
+pub fn init_tuner(algorithm: String) -> anyhow::Result<()> {
+    tuner_init(&algorithm);
     Ok(())
 }
 
-pub fn init_tuner(algorithm: String, num_samples: u32) -> anyhow::Result<()> {
-    tuner_init(&algorithm, num_samples as usize);
-    Ok(())
+pub fn init_stream(sink: StreamSink<Partial>) -> anyhow::Result<()> {
+    tuner_init_stream(sink)
+}
+
+pub fn new_audio_data(byte_buffer: Vec<u8>) -> anyhow::Result<()> {
+    tuner_new_audio_data(&byte_buffer)
 }

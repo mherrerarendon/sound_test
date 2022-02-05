@@ -3,8 +3,8 @@ use crate::{
     constants::*,
     detectors::{fft_space::FftSpace, FundamentalDetector},
 };
-use anyhow::Result;
 use rustfft::FftPlanner;
+use std::borrow::Borrow;
 
 use super::peak_iter::FftPeaks;
 
@@ -13,14 +13,21 @@ pub struct RawFftDetector {
 }
 
 impl FundamentalDetector for RawFftDetector {
-    fn detect_fundamental(&mut self, signal: &[f64]) -> Result<Partial> {
+    fn detect_fundamental<I: IntoIterator>(&mut self, signal: I) -> Option<Partial>
+    where
+        <I as IntoIterator>::Item: std::borrow::Borrow<f64>,
+    {
         let mut planner = FftPlanner::new();
         let fft = planner.plan_fft_forward(self.fft_space.len());
+        let signal_iter = signal.into_iter();
+        let signal_size = signal_iter
+            .size_hint()
+            .1
+            .expect("Failed to get size hint for signal");
         self.fft_space.init_fft_space(
-            signal
-                .iter()
-                .zip(apodize::hanning_iter(signal.len()))
-                .map(|(&x, y)| x * y),
+            signal_iter
+                .zip(apodize::hanning_iter(signal_size))
+                .map(|(x, y)| x.borrow() * y),
         );
 
         let (fft_space, scratch) = self.fft_space.workspace();
@@ -33,7 +40,6 @@ impl FundamentalDetector for RawFftDetector {
                 freq: item.0 * SAMPLE_RATE / self.fft_space.len() as f64,
                 intensity: item.1,
             })
-            .ok_or(anyhow::anyhow!("Failed to detect fundamental with raw fft"))
     }
 
     fn spectrum(&self) -> Vec<(usize, f64)> {

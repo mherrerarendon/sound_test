@@ -3,7 +3,6 @@ use crate::{
     constants::*,
     detectors::{fft_space::FftSpace, FundamentalDetector},
 };
-use anyhow::Result;
 use fitting::gaussian::fit;
 use rustfft::FftPlanner;
 
@@ -63,7 +62,10 @@ pub struct AutocorrelationDetector {
 }
 
 impl FundamentalDetector for AutocorrelationDetector {
-    fn detect_fundamental(&mut self, signal: &[f64]) -> Result<Partial> {
+    fn detect_fundamental<I: IntoIterator>(&mut self, signal: I) -> Option<Partial>
+    where
+        <I as IntoIterator>::Item: std::borrow::Borrow<f64>,
+    {
         let mut planner = FftPlanner::new();
         let forward_fft = planner.plan_fft_forward(self.fft_space.len());
         self.fft_space.init_fft_space(signal);
@@ -87,9 +89,6 @@ impl FundamentalDetector for AutocorrelationDetector {
                     accum
                 }
             })
-            .ok_or(anyhow::anyhow!(
-                "Failed to detect fundamental with autocorrelation"
-            ))
     }
 
     fn spectrum(&self) -> Vec<(usize, f64)> {

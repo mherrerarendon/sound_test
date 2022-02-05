@@ -24,7 +24,8 @@ const kNotes = [
 ];
 const kA4Index = 12 * 4;
 
-class PartialsModel extends ChangeNotifier {
+class PartialsModel {
+  PartialsModel(this._partial);
   Partial _partial = Partial(freq: kA4Freq, intensity: 1.0);
 
   double get freq => _partial.freq;
@@ -42,10 +43,5 @@ class PartialsModel extends ChangeNotifier {
   bool inTune() {
     final double absoluteCentsOffset = centsOffset.abs();
     return (absoluteCentsOffset < kMaxCentsOffset);
-  }
-
-  void setNewFundamental(Partial partial) {
-    _partial = partial;
-    notifyListeners();
   }
 }

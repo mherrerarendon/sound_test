@@ -1,7 +1,7 @@
-pub fn audio_buffer_to_signal(byte_buffer: &[u8]) -> Vec<f64> {
+pub fn audio_buffer_to_samples(byte_buffer: &[u8]) -> Vec<i16> {
     byte_buffer
         .chunks_exact(2)
-        .map(|a| i16::from_ne_bytes([a[0], a[1]]) as f64)
+        .map(|a| i16::from_ne_bytes([a[0], a[1]]))
         .collect()
 }
 
@@ -18,6 +18,12 @@ pub fn calc_optimized_fft_space_size(num_samples: usize) -> usize {
 
 #[cfg(test)]
 pub mod test_utils {
+    pub(crate) fn audio_buffer_to_signal(byte_buffer: &[u8]) -> Vec<f64> {
+        audio_buffer_to_samples(byte_buffer)
+            .into_iter()
+            .map(|x| x as f64)
+            .collect()
+    }
     use crate::detectors::FundamentalDetector;
     use float_cmp::ApproxEq;
 
@@ -102,7 +108,9 @@ pub mod test_utils {
         // Sanity check
         assert_eq!(fft_space_size, TEST_FFT_SPACE_SIZE);
 
-        let partial = detector.detect_fundamental(&signal)?;
+        let partial = detector
+            .detect_fundamental(&signal)
+            .ok_or(anyhow::anyhow!("Did not get pitch"))?;
 
         if PLOT {
             let spectrum = detector.spectrum();
