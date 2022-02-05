@@ -17,7 +17,7 @@ class SelectAlgorithmPage extends StatelessWidget {
           settings.setDetectionAlgorithm(val!);
           await TunerInherited.of(context)!
               .tunerApi
-              .setAlgorithm(algorithm: algorithm.toShortString());
+              .changeAlgorithm(algorithm: algorithm.toShortString());
           await Future.delayed(const Duration(milliseconds: 350));
           Navigator.pop(context);
         },

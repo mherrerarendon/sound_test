@@ -19,7 +19,7 @@ smoothed_z_score = { git = "https://github.com/mherrerarendon/smoothed_z_score.g
 apodize = "1.0.0"
 
 [lib]
-crate-type = ["staticlib"]
+crate-type = ["cdylib"]
 
 [dev-dependencies]
 serde_json = "1.0.74"

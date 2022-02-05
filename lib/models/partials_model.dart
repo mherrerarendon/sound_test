@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
 import 'package:sound_test/api.dart';
 
 const kA4Freq = 440.0;
@@ -24,8 +23,9 @@ const kNotes = [
 ];
 const kA4Index = 12 * 4;
 
-class PartialsModel extends ChangeNotifier {
-  Partial _partial = Partial(freq: kA4Freq, intensity: 1.0);
+class PartialsModel {
+  PartialsModel(this._partial);
+  final Partial _partial;
 
   double get freq => _partial.freq;
   double get intensity => _partial.intensity;
@@ -42,10 +42,5 @@ class PartialsModel extends ChangeNotifier {
   bool inTune() {
     final double absoluteCentsOffset = centsOffset.abs();
     return (absoluteCentsOffset < kMaxCentsOffset);
-  }
-
-  void setNewFundamental(Partial partial) {
-    _partial = partial;
-    notifyListeners();
   }
 }

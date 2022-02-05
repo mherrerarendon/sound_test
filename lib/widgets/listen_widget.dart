@@ -1,11 +1,10 @@
 import 'dart:async';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:flutter/material.dart';
-import 'package:sound_test/models/partials_model.dart';
-import 'package:sound_test/models/settings_model.dart';
 import 'package:sound_test/widgets/tuner_inhereted_widget.dart';
-import 'package:provider/provider.dart';
 import 'package:wakelock/wakelock.dart';
+import 'dart:io';
+import 'package:permission_handler/permission_handler.dart';
 
 const int tSampleRate = 44000;
 const int tNumChannels = 1;
@@ -35,33 +34,20 @@ class _ListenWidgetState extends State<ListenWidget> {
   StreamSubscription? _mRecordingDataSubscription;
 
   Future<void> _openRecorder() async {
+    if (Platform.isAndroid) {
+      var status = await Permission.microphone.request();
+      if (status != PermissionStatus.granted) {
+        throw RecordingPermissionException('Microphone permission not granted');
+      }
+    }
     Wakelock.enable();
     await _mRecorder!.openRecorder();
     final tuner = TunerInherited.of(context)!.tunerApi;
-    final detectionAlgorithm =
-        Provider.of<SettingsModel>(context, listen: false)
-            .detectionAlgorithm
-            .toShortString();
-    await tuner.initTuner(
-        algorithm: detectionAlgorithm, numSamples: (tBufferSize / 2).round());
     var recordingDataController = StreamController<Food>();
     _mRecordingDataSubscription =
         recordingDataController.stream.listen((buffer) async {
       if (buffer is FoodData) {
-        try {
-          final fundamental = await tuner.detectPitch(byteBuffer: buffer.data!);
-          if (fundamental.freq > tMinFrequency &&
-              fundamental.freq < tMaxFrequency) {
-            if ((detectionAlgorithm == 'autocorrelation' &&
-                    fundamental.intensity > .9) ||
-                (detectionAlgorithm != 'autocorrelation')) {
-              Provider.of<PartialsModel>(context, listen: false)
-                  .setNewFundamental(fundamental);
-            }
-          }
-        } catch (err) {
-          debugPrint('Caught error: $err');
-        }
+        await tuner.newAudioData(byteBuffer: buffer.data!);
       }
     });
     await _mRecorder!.startRecorder(

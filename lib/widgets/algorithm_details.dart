@@ -66,7 +66,7 @@ class _AlgorithmDetailsState extends State<AlgorithmDetails> {
               settings.setDetectionAlgorithm(algorithm);
               await TunerInherited.of(context)!
                   .tunerApi
-                  .setAlgorithm(algorithm: algorithm.toShortString());
+                  .changeAlgorithm(algorithm: algorithm.toShortString());
               Navigator.pop(context);
               Navigator.pop(context);
             },
