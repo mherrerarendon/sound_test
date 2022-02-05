@@ -3,7 +3,6 @@ use crate::{
     constants::*,
     detectors::{fft_space::FftSpace, FundamentalDetector},
 };
-use anyhow::Result;
 use rustfft::FftPlanner;
 use std::borrow::Borrow;
 

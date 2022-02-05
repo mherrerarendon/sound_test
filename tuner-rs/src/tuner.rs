@@ -18,7 +18,6 @@ lazy_static! {
 }
 
 pub fn tuner_change_algorithm(algorithm: &str) -> Result<()> {
-    println!("Tuner: Changing algorithm to {}", algorithm);
     TUNER
         .lock()
         .unwrap()
@@ -28,13 +27,11 @@ pub fn tuner_change_algorithm(algorithm: &str) -> Result<()> {
 }
 
 pub fn tuner_init(algorithm: &str) {
-    println!("Tuner: Initializing tuner");
     let mut guard = TUNER.lock().unwrap();
     *guard = Some(Tuner::new(algorithm));
 }
 
 pub fn tuner_init_stream(sink: StreamSink<Partial>) -> Result<()> {
-    println!("Tuner: Initializing tuner");
     TUNER
         .lock()
         .unwrap()
@@ -44,7 +41,9 @@ pub fn tuner_init_stream(sink: StreamSink<Partial>) -> Result<()> {
 }
 
 pub fn tuner_new_audio_data(byte_buffer: &[u8]) -> Result<()> {
-    println!("Tuner: New audio data");
+    if byte_buffer.len() % 2 != 0 {
+        bail!("Audio buffer size must be a multiple of 2");
+    }
     TUNER
         .lock()
         .unwrap()
@@ -186,18 +185,33 @@ mod tests {
         Ok(())
     }
 
-    // #[test]
-    // fn global_tuner() -> anyhow::Result<()> {
-    //     let mut sample_data: SampleData =
-    //         serde_json::from_str(include_str!("../test_data/cello_open_a.json"))?;
-    //     let buffer = sample_data.data.take().unwrap();
-
-    //     tuner_init(AUTOCORRELATION_ALGORITHM, buffer.len() / 2);
-    //     let partial = tuner_detect_pitch(&buffer)?;
-    //     assert!(partial.freq.approx_eq(219.634, (0.02, 2)));
-
-    //     Ok(())
-    // }
-
-    // TODO: test with different buffer sizes
+    #[test]
+    fn small_buffers() -> anyhow::Result<()> {
+        let mut sample_data: SampleData =
+            serde_json::from_str(include_str!("../test_data/cello_open_a.json"))?;
+        let mut tuner = Tuner::new(AUTOCORRELATION_ALGORITHM);
+        let buffer = sample_data.data.take().unwrap();
+        let chunk_sizes = [1024, 2048, 4096, 8192, 16384];
+        for chunk_size in chunk_sizes {
+            let mut last_chunk_idx = buffer.len() / chunk_size;
+            if buffer.len() % chunk_size == 0 {
+                last_chunk_idx -= 1;
+            }
+            buffer
+                .chunks(chunk_size)
+                .enumerate()
+                .for_each(|(idx, chunk)| {
+                    let partial = tuner.new_audio_data(chunk);
+                    if idx == last_chunk_idx {
+                        assert!(partial
+                            .expect("should get pitch")
+                            .freq
+                            .approx_eq(219.634, (0.02, 2)));
+                    } else {
+                        assert!(partial.is_none());
+                    }
+                });
+        }
+        Ok(())
+    }
 }

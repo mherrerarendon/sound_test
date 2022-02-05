@@ -3,7 +3,6 @@ use crate::{
     constants::*,
     detectors::{fft_space::FftSpace, FundamentalDetector},
 };
-use anyhow::Result;
 use fitting::gaussian::fit;
 use rustfft::FftPlanner;
 

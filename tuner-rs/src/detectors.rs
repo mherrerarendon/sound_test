@@ -6,7 +6,6 @@ mod fft_space;
 mod peak_iter;
 
 use crate::api::Partial;
-use anyhow::Result;
 
 use self::{
     autocorrelation::AutocorrelationDetector, cepstrum::PowerCepstrum, raw_fft::RawFftDetector,

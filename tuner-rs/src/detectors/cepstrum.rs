@@ -3,7 +3,6 @@ use crate::{
     constants::*,
     detectors::{fft_space::FftSpace, peak_iter::FftPeaks, FundamentalDetector},
 };
-use anyhow::Result;
 use rustfft::{num_complex::Complex, FftPlanner};
 
 pub struct PowerCepstrum {
