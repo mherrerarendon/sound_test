@@ -2,7 +2,7 @@
     package="com.example.sound_test">
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
    <application
-        android:label="sound_test"
+        android:label="Sound Test"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
