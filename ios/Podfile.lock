@@ -6,6 +6,8 @@ PODS:
   - flutter_sound_core (9.1.2)
   - path_provider_ios (0.0.1):
     - Flutter
+  - "permission_handler (5.1.0+2)":
+    - Flutter
   - shared_preferences_ios (0.0.1):
     - Flutter
   - wakelock (0.0.1):
@@ -15,6 +17,7 @@ DEPENDENCIES:
   - Flutter (from `Flutter`)
   - flutter_sound (from `.symlinks/plugins/flutter_sound/ios`)
   - path_provider_ios (from `.symlinks/plugins/path_provider_ios/ios`)
+  - permission_handler (from `.symlinks/plugins/permission_handler/ios`)
   - shared_preferences_ios (from `.symlinks/plugins/shared_preferences_ios/ios`)
   - wakelock (from `.symlinks/plugins/wakelock/ios`)
 
@@ -29,6 +32,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_sound/ios"
   path_provider_ios:
     :path: ".symlinks/plugins/path_provider_ios/ios"
+  permission_handler:
+    :path: ".symlinks/plugins/permission_handler/ios"
   shared_preferences_ios:
     :path: ".symlinks/plugins/shared_preferences_ios/ios"
   wakelock:
@@ -39,6 +44,7 @@ SPEC CHECKSUMS:
   flutter_sound: a76214c89a5debb0307bb653c364c5ec2fed8cba
   flutter_sound_core: b31694f619cd74a09744a7e392f5a50e7004c6ef
   path_provider_ios: 7d7ce634493af4477d156294792024ec3485acd5
+  permission_handler: ccb20a9fad0ee9b1314a52b70b76b473c5f8dab0
   shared_preferences_ios: aef470a42dc4675a1cdd50e3158b42e3d1232b32
   wakelock: d0fc7c864128eac40eba1617cb5264d9c940b46f
 
