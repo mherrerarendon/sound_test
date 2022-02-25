@@ -6,6 +6,7 @@ import 'package:sound_test/widgets/pitch_pointer.dart';
 import 'package:sound_test/widgets/debug_partial_desc.dart';
 import 'package:sound_test/widgets/tuner_inhereted_widget.dart';
 import 'package:sound_test/models/partials_model.dart';
+import 'package:sound_test/constants.dart';
 
 const bool _debug = false;
 
@@ -29,6 +30,9 @@ class MainArea extends StatelessWidget {
                 return const Text('Connection State: waiting');
               case ConnectionState.active:
                 final partialModel = PartialsModel(snapshot.data!);
+                if (partialModel.freq < tMinFrequency) {
+                  return const Text('Connection State: frequency too low');
+                }
                 return Column(
                   children: [
                     _debug ? DebugPartialDesc(partialModel) : Container(),

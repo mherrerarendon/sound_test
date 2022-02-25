@@ -12,7 +12,6 @@ const int tBitsPerSample = 16;
 const int tBitRate = tSampleRate * tNumChannels * tBitsPerSample;
 const double tMinIntensity = 5000.0;
 const double tMaxFrequency = 4186.0;
-const double tMinFrequency = 27.5;
 
 typedef _Fn = void Function();
 

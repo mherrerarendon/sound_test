@@ -40,17 +40,16 @@ pub fn tuner_init_stream(sink: StreamSink<Partial>) -> Result<()> {
         .init_stream(sink)
 }
 
-pub fn tuner_detect_pitch_with_buffer(byte_buffer: &[u8]) -> Result<Partial> {
+pub fn tuner_detect_pitch_with_buffer(byte_buffer: &[u8]) -> Result<Option<Partial>> {
     if byte_buffer.len() % 2 != 0 {
         bail!("Audio buffer size must be a multiple of 2");
     }
-    TUNER
+    Ok(TUNER
         .lock()
         .unwrap()
         .as_mut()
         .ok_or(TunerError::TunerNotInitialized)?
-        .detect_pitch_with_buffer(byte_buffer)
-        .ok_or(anyhow::anyhow!("No pitch detected"))
+        .detect_pitch_with_buffer(byte_buffer))
 }
 
 pub fn tuner_new_audio_data(byte_buffer: &[u8]) -> Result<()> {

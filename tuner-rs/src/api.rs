@@ -29,7 +29,7 @@ pub fn init_tuner(algorithm: String) -> anyhow::Result<()> {
     Ok(())
 }
 
-pub fn detect_pitch_with_buffer(byte_buffer: Vec<u8>) -> anyhow::Result<Partial> {
+pub fn detect_pitch_with_buffer(byte_buffer: Vec<u8>) -> anyhow::Result<Option<Partial>> {
     tuner_detect_pitch_with_buffer(&byte_buffer)
 }
 

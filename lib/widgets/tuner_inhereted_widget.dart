@@ -25,7 +25,11 @@ class TunerInherited extends InheritedWidget {
         try {
           final partial =
               await tunerApi.detectPitchWithBuffer(byteBuffer: _buffer);
-          _controller.add(partial);
+          if (partial != null) {
+            _controller.add(partial);
+          } else {
+            _controller.addError('No pitch detected');
+          }
           _resetBuffer();
         } catch (e) {
           _resetBuffer();
@@ -34,7 +38,11 @@ class TunerInherited extends InheritedWidget {
     } else {
       try {
         final partial = await tunerApi.detectPitchWithBuffer(byteBuffer: data);
-        _controller.add(partial);
+        if (partial != null) {
+          _controller.add(partial);
+        } else {
+          _controller.addError('No pitch detected');
+        }
       } catch (e) {
         print(e);
       }
