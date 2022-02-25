@@ -28,7 +28,7 @@ class TunerInherited extends InheritedWidget {
           _controller.add(partial);
           _resetBuffer();
         } catch (e) {
-          print(e);
+          _resetBuffer();
         }
       }
     } else {
