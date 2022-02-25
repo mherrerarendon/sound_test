@@ -17,7 +17,7 @@ class MainArea extends StatelessWidget {
     final tuner = TunerInherited.of(context)!;
     return StreamBuilder<Partial>(
         // stream: _bids,
-        stream: tuner.pitchDetectionStream,
+        stream: tuner.stream,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Text('Stack trace: ${snapshot.stackTrace}');

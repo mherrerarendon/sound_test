@@ -45,6 +45,7 @@ def copy_artifacts(release):
 
 
 if __name__ == '__main__':
+    print('Remember to set `crate-type = [\"staticlib\"]` in Cargo.toml')
     cli = argparse.ArgumentParser(
         description='Build script for sound test')
     cli.add_argument('-d', '--debug', action='store_true',

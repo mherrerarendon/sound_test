@@ -40,6 +40,19 @@ pub fn tuner_init_stream(sink: StreamSink<Partial>) -> Result<()> {
         .init_stream(sink)
 }
 
+pub fn tuner_detect_pitch_with_buffer(byte_buffer: &[u8]) -> Result<Partial> {
+    if byte_buffer.len() % 2 != 0 {
+        bail!("Audio buffer size must be a multiple of 2");
+    }
+    TUNER
+        .lock()
+        .unwrap()
+        .as_mut()
+        .ok_or(TunerError::TunerNotInitialized)?
+        .detect_pitch_with_buffer(byte_buffer)
+        .ok_or(anyhow::anyhow!("No pitch detected"))
+}
+
 pub fn tuner_new_audio_data(byte_buffer: &[u8]) -> Result<()> {
     if byte_buffer.len() % 2 != 0 {
         bail!("Audio buffer size must be a multiple of 2");
@@ -102,6 +115,26 @@ impl Tuner {
         partial
     }
 
+    pub fn detect_pitch_with_buffer(&mut self, byte_buffer: &[u8]) -> Option<Partial> {
+        if self.remaining_frame_capacity != FRAME_BUFFER_SIZE {
+            self.reset_frame_buffer();
+        }
+        let mut samples = audio_buffer_to_samples(byte_buffer);
+        if samples.len() > FRAME_BUFFER_SIZE {
+            samples = samples[0..FRAME_BUFFER_SIZE].to_vec();
+        }
+        self.copy_samples_into_frame_buffer(&samples);
+        self.process_audio_data()
+    }
+
+    fn copy_samples_into_frame_buffer(&mut self, samples: &[i16]) {
+        assert!(samples.len() <= FRAME_BUFFER_SIZE);
+        let append_idx = FRAME_BUFFER_SIZE - self.remaining_frame_capacity;
+        let append_end_idx = append_idx + samples.len();
+        self.frame_buffer[append_idx..append_end_idx].copy_from_slice(&samples);
+        self.remaining_frame_capacity -= samples.len();
+    }
+
     pub fn new_audio_data(&mut self, byte_buffer: &[u8]) -> Option<Partial> {
         let mut new_pitch = None;
         let samples = audio_buffer_to_samples(byte_buffer);
@@ -109,10 +142,7 @@ impl Tuner {
             new_pitch = self.process_audio_data();
             self.new_audio_data(byte_buffer)?;
         } else {
-            let append_idx = FRAME_BUFFER_SIZE - self.remaining_frame_capacity;
-            let append_end_idx = append_idx + samples.len();
-            self.frame_buffer[append_idx..append_end_idx].copy_from_slice(&samples);
-            self.remaining_frame_capacity -= samples.len();
+            self.copy_samples_into_frame_buffer(&samples);
             if self.remaining_frame_capacity == 0 {
                 new_pitch = self.process_audio_data();
             }
@@ -168,6 +198,25 @@ mod tests {
     #[derive(Deserialize)]
     struct SampleData {
         data: Option<Vec<u8>>,
+    }
+
+    #[test]
+    fn detect_with_buffer() -> anyhow::Result<()> {
+        let mut sample_data: SampleData =
+            serde_json::from_str(include_str!("../test_data/cello_open_a.json"))?;
+        let buffer = sample_data.data.take().unwrap();
+        let mut tuner = Tuner::new(AUTOCORRELATION_ALGORITHM);
+        let partial = tuner
+            .detect_pitch_with_buffer(&buffer)
+            .expect("failed to detect pitch");
+        assert!(partial.freq.approx_eq(219.634, (0.02, 2)));
+
+        tuner.set_algorithm(POWER_CEPSTRUM_ALGORITHM)?;
+        let partial = tuner
+            .detect_pitch_with_buffer(&buffer)
+            .expect("failed to detect pitch");
+        assert!(partial.freq.approx_eq(219.418, (0.02, 2)));
+        Ok(())
     }
 
     #[test]
