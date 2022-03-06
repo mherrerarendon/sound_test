@@ -115,6 +115,7 @@ impl Tuner {
     }
 
     pub fn detect_pitch(&mut self) -> Option<Partial> {
+        // ZERO_CROSSING_RATE_THRESHOLD is not totally accurate yet.
         // if self.zero_crossing_rate() > ZERO_CROSSING_RATE_THRESHOLD {
         //     return None;
         // }
