@@ -10,7 +10,7 @@ class TunerInherited extends InheritedWidget {
   TunerInherited(this.tunerApi, {Key? key, required Widget child})
       : super(key: key, child: child);
   final TunerRs tunerApi;
-  final StreamController<Partial> _controller = StreamController<Partial>();
+  final StreamController<Partial?> _controller = StreamController<Partial?>();
   final Uint8List _buffer = Uint8List(tBufferSize);
   int _bufferCursor = 0;
 
@@ -38,13 +38,9 @@ class TunerInherited extends InheritedWidget {
     } else {
       try {
         final partial = await tunerApi.detectPitchWithBuffer(byteBuffer: data);
-        if (partial != null) {
-          _controller.add(partial);
-        } else {
-          _controller.addError('No pitch detected');
-        }
+        _controller.add(partial);
       } catch (e) {
-        print(e);
+        _controller.addError(e);
       }
     }
   }
