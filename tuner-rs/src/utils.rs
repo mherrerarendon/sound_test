@@ -24,7 +24,7 @@ pub mod test_utils {
             .map(|x| x as f64)
             .collect()
     }
-    use crate::detectors::FundamentalDetector;
+    use crate::frequency_detector::FrequencyDetector;
     use float_cmp::ApproxEq;
 
     use super::*;
@@ -91,7 +91,7 @@ pub mod test_utils {
         Ok(())
     }
 
-    pub fn test_fundamental_freq<D: FundamentalDetector>(
+    pub fn test_fundamental_freq<D: FrequencyDetector>(
         detector: &mut D,
         samples_file: &str,
         expected_freq: f64,
@@ -108,8 +108,8 @@ pub mod test_utils {
         // Sanity check
         assert_eq!(fft_space_size, TEST_FFT_SPACE_SIZE);
 
-        let partial = detector
-            .detect_fundamental(&signal)
+        let freq = detector
+            .detect_frequency(&signal)
             .ok_or(anyhow::anyhow!("Did not get pitch"))?;
 
         if PLOT {
@@ -119,10 +119,10 @@ pub mod test_utils {
         }
 
         assert!(
-            partial.freq.approx_eq(expected_freq, (0.02, 2)),
+            freq.approx_eq(expected_freq, (0.02, 2)),
             "Expected freq: {}, Actual freq: {}",
             expected_freq,
-            partial.freq
+            freq
         );
         Ok(())
     }

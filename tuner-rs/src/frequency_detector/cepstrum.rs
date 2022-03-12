@@ -1,7 +1,7 @@
 use crate::{
     api::Partial,
     constants::*,
-    detectors::{fft_space::FftSpace, peak_iter::FftPeaks, FundamentalDetector},
+    frequency_detector::{fft_space::FftSpace, peak_iter::FftPeaks, FrequencyDetector},
 };
 use rustfft::{num_complex::Complex, FftPlanner};
 
@@ -9,8 +9,8 @@ pub struct PowerCepstrum {
     fft_space: FftSpace,
 }
 
-impl FundamentalDetector for PowerCepstrum {
-    fn detect_fundamental<I: IntoIterator>(&mut self, signal: I) -> Option<Partial>
+impl FrequencyDetector for PowerCepstrum {
+    fn detect_frequency<I: IntoIterator>(&mut self, signal: I) -> Option<f64>
     where
         <I as IntoIterator>::Item: std::borrow::Borrow<f64>,
     {
@@ -40,6 +40,7 @@ impl FundamentalDetector for PowerCepstrum {
                 freq: SAMPLE_RATE / mu,
                 intensity: amplitude,
             })
+            .map(|partial| partial.freq)
     }
 
     fn spectrum(&self) -> Vec<(usize, f64)> {

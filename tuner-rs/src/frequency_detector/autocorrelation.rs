@@ -1,7 +1,7 @@
 use crate::{
     api::Partial,
     constants::*,
-    detectors::{fft_space::FftSpace, FundamentalDetector},
+    frequency_detector::{fft_space::FftSpace, FrequencyDetector},
 };
 use fitting::gaussian::fit;
 use rustfft::FftPlanner;
@@ -61,8 +61,8 @@ pub struct AutocorrelationDetector {
     fft_space: FftSpace,
 }
 
-impl FundamentalDetector for AutocorrelationDetector {
-    fn detect_fundamental<I: IntoIterator>(&mut self, signal: I) -> Option<Partial>
+impl FrequencyDetector for AutocorrelationDetector {
+    fn detect_frequency<I: IntoIterator>(&mut self, signal: I) -> Option<f64>
     where
         <I as IntoIterator>::Item: std::borrow::Borrow<f64>,
     {
@@ -89,6 +89,7 @@ impl FundamentalDetector for AutocorrelationDetector {
                     accum
                 }
             })
+            .map(|partial| partial.freq)
     }
 
     fn spectrum(&self) -> Vec<(usize, f64)> {

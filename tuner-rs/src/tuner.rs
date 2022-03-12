@@ -1,7 +1,7 @@
 use crate::{
-    api::Partial,
+    api::Pitch,
     constants::*,
-    detectors::{autocorrelation, cepstrum, raw_fft, Detector, FundamentalDetector},
+    frequency_detector::{autocorrelation, cepstrum, raw_fft, Detector, FrequencyDetector},
     utils::{audio_buffer_to_samples, calc_optimized_fft_space_size},
     TunerError,
 };
@@ -30,7 +30,7 @@ pub fn tuner_init(algorithm: &str) {
     *guard = Some(Tuner::new(algorithm));
 }
 
-pub fn tuner_detect_pitch_with_buffer(byte_buffer: &[u8]) -> Result<Option<Partial>> {
+pub fn tuner_detect_pitch_with_buffer(byte_buffer: &[u8]) -> Result<Option<Pitch>> {
     if byte_buffer.len() % 2 != 0 {
         bail!("Audio buffer size must be a multiple of 2");
     }
@@ -69,7 +69,7 @@ impl Tuner {
         }
     }
 
-    fn process_audio_data(&mut self) -> Option<Partial> {
+    fn process_audio_data(&mut self) -> Option<Pitch> {
         let mut partial = None;
         if let Some(detected_partial) = self.detect_pitch() {
             partial = Some(detected_partial.clone());
@@ -79,7 +79,7 @@ impl Tuner {
         partial
     }
 
-    pub fn detect_pitch_with_buffer(&mut self, byte_buffer: &[u8]) -> Option<Partial> {
+    pub fn detect_pitch_with_buffer(&mut self, byte_buffer: &[u8]) -> Option<Pitch> {
         if self.remaining_frame_capacity != FRAME_BUFFER_SIZE {
             self.reset_frame_buffer();
         }
@@ -114,7 +114,7 @@ impl Tuner {
             / 2
     }
 
-    pub fn detect_pitch(&mut self) -> Option<Partial> {
+    pub fn detect_pitch(&mut self) -> Option<Pitch> {
         // ZERO_CROSSING_RATE_THRESHOLD is not totally accurate yet.
         // if self.zero_crossing_rate() > ZERO_CROSSING_RATE_THRESHOLD {
         //     return None;
@@ -124,7 +124,7 @@ impl Tuner {
             .iter()
             .take(FRAME_BUFFER_SIZE - self.remaining_frame_capacity)
             .map(|sample| *sample as f64);
-        self.detector.detect_fundamental(iter)
+        self.detector.detect_frequency(iter).map(|f| f.into())
     }
 
     pub fn set_algorithm(&mut self, algorithm: &str) -> Result<()> {
@@ -199,16 +199,16 @@ mod tests {
             serde_json::from_str(include_str!("../test_data/cello_open_a.json"))?;
         let buffer = sample_data.data.take().unwrap();
         let mut tuner = Tuner::new(AUTOCORRELATION_ALGORITHM);
-        let partial = tuner
+        let pitch = tuner
             .detect_pitch_with_buffer(&buffer)
             .expect("failed to detect pitch");
-        assert!(partial.freq.approx_eq(219.634, (0.02, 2)));
+        assert_eq!(pitch.note_name, "A");
 
         tuner.set_algorithm(POWER_CEPSTRUM_ALGORITHM)?;
         let partial = tuner
             .detect_pitch_with_buffer(&buffer)
             .expect("failed to detect pitch");
-        assert!(partial.freq.approx_eq(219.418, (0.02, 2)));
+        assert_eq!(pitch.note_name, "A");
         Ok(())
     }
 }

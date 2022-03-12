@@ -1,7 +1,7 @@
 use crate::{
     api::Partial,
     constants::*,
-    detectors::{fft_space::FftSpace, FundamentalDetector},
+    frequency_detector::{fft_space::FftSpace, FrequencyDetector},
 };
 use rustfft::FftPlanner;
 use std::borrow::Borrow;
@@ -12,8 +12,8 @@ pub struct RawFftDetector {
     fft_space: FftSpace,
 }
 
-impl FundamentalDetector for RawFftDetector {
-    fn detect_fundamental<I: IntoIterator>(&mut self, signal: I) -> Option<Partial>
+impl FrequencyDetector for RawFftDetector {
+    fn detect_frequency<I: IntoIterator>(&mut self, signal: I) -> Option<f64>
     where
         <I as IntoIterator>::Item: std::borrow::Borrow<f64>,
     {
@@ -40,6 +40,7 @@ impl FundamentalDetector for RawFftDetector {
                 freq: item.0 * SAMPLE_RATE / self.fft_space.len() as f64,
                 intensity: item.1,
             })
+            .map(|partial| partial.freq)
     }
 
     fn spectrum(&self) -> Vec<(usize, f64)> {
