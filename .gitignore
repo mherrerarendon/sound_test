@@ -51,6 +51,7 @@ ios/Runner/libtuner_rs.a
 lib/api.dart
 tuner-rs/src/bridge_generated.rs
 android/app/src/main/jniLibs/
+*.freezed.*
 
 # Rust related
 tuner-rs/target

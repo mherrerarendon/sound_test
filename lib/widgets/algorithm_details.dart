@@ -49,7 +49,6 @@ class _AlgorithmDetailsState extends State<AlgorithmDetails> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.of(context).pop();
-            Navigator.of(context).pop();
           },
         ),
         title: const Text('Algorithm Details'),
@@ -67,7 +66,6 @@ class _AlgorithmDetailsState extends State<AlgorithmDetails> {
               context
                   .read<TunerBloc>()
                   .add(TunerEvent.changeAlgorithm(algorithm.toShortString()));
-              Navigator.pop(context);
               Navigator.pop(context);
             },
             child: const Text('Select', style: TextStyle(fontSize: 30)),

@@ -74,13 +74,8 @@ class TunerBloc extends Bloc<TunerEvent, TunerState> {
       } else {
         emit(TunerState.pitchDetected(pitch));
       }
-      if (pitch != null) {
-        print(
-            'Pitch detected: ${pitch.noteName}${pitch.octave}, cents: ${pitch.centsOffset}, in tune: ${pitch.inTune}, previous: ${pitch.previousNoteName}, next: ${pitch.nextNoteName}');
-      }
     } catch (e) {
-      print(e.toString());
-      //   emit(TunerState.error(e.toString()));
+      emit(TunerState.error(e.toString()));
     }
   }
 }
