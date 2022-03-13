@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:sound_test/models/partials_model.dart';
+import 'package:sound_test/api.dart';
 
 const double kWidth = 40;
 
 class PlayedPitch extends StatelessWidget {
-  const PlayedPitch(this._partialsModel, {Key? key}) : super(key: key);
+  const PlayedPitch(this._pitch, {Key? key}) : super(key: key);
 
-  final PartialsModel _partialsModel;
+  final Pitch _pitch;
 
   @override
   Widget build(BuildContext context) {
@@ -16,9 +16,9 @@ class PlayedPitch extends StatelessWidget {
           width: kWidth,
           child: FittedBox(
             child: Text(
-              _partialsModel.leftNoteName,
+              _pitch.previousNoteName,
               style: TextStyle(
-                  color: _partialsModel.inTune()
+                  color: _pitch.inTune
                       ? Theme.of(context).colorScheme.onSurface
                       : Colors.grey),
             ),
@@ -31,9 +31,9 @@ class PlayedPitch extends StatelessWidget {
           child: FittedBox(
             alignment: Alignment.bottomCenter,
             child: Text(
-              _partialsModel.noteName,
+              _pitch.noteName,
               style: TextStyle(
-                  color: _partialsModel.inTune()
+                  color: _pitch.inTune
                       ? Theme.of(context).colorScheme.onSurface
                       : Colors.grey),
             ),
@@ -46,9 +46,9 @@ class PlayedPitch extends StatelessWidget {
           width: kWidth,
           child: FittedBox(
             child: Text(
-              _partialsModel.rigthNoteName,
+              _pitch.nextNoteName,
               style: TextStyle(
-                  color: _partialsModel.inTune()
+                  color: _pitch.inTune
                       ? Theme.of(context).colorScheme.onSurface
                       : Colors.grey),
             ),

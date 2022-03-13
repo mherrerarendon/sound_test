@@ -1,7 +1,8 @@
 import 'dart:async';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:flutter/material.dart';
-import 'package:sound_test/widgets/tuner_inhereted_widget.dart';
+import 'package:sound_test/blocs/tuner_bloc.dart';
 import 'package:wakelock/wakelock.dart';
 import 'dart:io';
 import 'package:permission_handler/permission_handler.dart';
@@ -42,7 +43,7 @@ class _ListenWidgetState extends State<ListenWidget> {
     _mRecordingDataSubscription =
         recordingDataController.stream.listen((buffer) async {
       if (buffer is FoodData) {
-        TunerInherited.of(context)!.addData(buffer.data!);
+        context.read<TunerBloc>().add(TunerEvent.bufferReady(buffer.data!));
       }
     });
     await _mRecorder!.startRecorder(

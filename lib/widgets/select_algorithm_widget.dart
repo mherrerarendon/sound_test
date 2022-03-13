@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:sound_test/blocs/tuner_bloc.dart';
 import 'package:sound_test/models/settings_model.dart';
-import 'package:sound_test/widgets/tuner_inhereted_widget.dart';
 import 'package:sound_test/widgets/algorithm_details.dart';
 
 class SelectAlgorithmPage extends StatelessWidget {
@@ -15,9 +15,9 @@ class SelectAlgorithmPage extends StatelessWidget {
         value: algorithm,
         onChanged: (DetectionAlgorithm? val) async {
           settings.setDetectionAlgorithm(val!);
-          await TunerInherited.of(context)!
-              .tunerApi
-              .changeAlgorithm(algorithm: algorithm.toShortString());
+          context
+              .read<TunerBloc>()
+              .add(TunerEvent.changeAlgorithm(algorithm.toShortString()));
           await Future.delayed(const Duration(milliseconds: 350));
           Navigator.pop(context);
         },

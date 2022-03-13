@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:sound_test/blocs/tuner_bloc.dart';
 import 'package:sound_test/models/settings_model.dart';
-import 'package:sound_test/widgets/tuner_inhereted_widget.dart';
 import 'package:sound_test/widgets/algorithm_details_page.dart';
 import 'package:page_view_indicators/circle_page_indicator.dart';
 
@@ -64,9 +64,9 @@ class _AlgorithmDetailsState extends State<AlgorithmDetails> {
               final algorithm =
                   DetectionAlgorithm.values[_pageController.page!.round()];
               settings.setDetectionAlgorithm(algorithm);
-              await TunerInherited.of(context)!
-                  .tunerApi
-                  .changeAlgorithm(algorithm: algorithm.toShortString());
+              context
+                  .read<TunerBloc>()
+                  .add(TunerEvent.changeAlgorithm(algorithm.toShortString()));
               Navigator.pop(context);
               Navigator.pop(context);
             },

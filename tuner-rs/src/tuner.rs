@@ -124,7 +124,9 @@ impl Tuner {
             .iter()
             .take(FRAME_BUFFER_SIZE - self.remaining_frame_capacity)
             .map(|sample| *sample as f64);
-        self.detector.detect_frequency(iter).map(|f| f.into())
+        self.detector
+            .detect_frequency(iter)
+            .and_then(|f| Pitch::try_from(f).ok())
     }
 
     pub fn set_algorithm(&mut self, algorithm: &str) -> Result<()> {
@@ -157,7 +159,6 @@ mod tests {
     use std::fs;
 
     use super::*;
-    use float_cmp::ApproxEq;
     use serde::Deserialize;
     #[derive(Deserialize)]
     struct SampleData {
@@ -205,7 +206,7 @@ mod tests {
         assert_eq!(pitch.note_name, "A");
 
         tuner.set_algorithm(POWER_CEPSTRUM_ALGORITHM)?;
-        let partial = tuner
+        let pitch = tuner
             .detect_pitch_with_buffer(&buffer)
             .expect("failed to detect pitch");
         assert_eq!(pitch.note_name, "A");

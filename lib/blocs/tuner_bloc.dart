@@ -1,67 +1,86 @@
 import 'dart:ffi';
 import 'dart:io';
-import 'dart:async';
-import 'dart:math';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sound_test/api.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dartz/dartz.dart';
 import 'package:sound_test/models/settings_model.dart';
 
 part 'tuner_bloc.freezed.dart';
 
-// Use union class instead (for failures)
-class TunerState {
-  late final Option<Pitch> pitch;
-  TunerState._(this.pitch);
-
-  factory TunerState({
-    @required Pitch? pitch,
-  }) {
-    if (pitch == null) {
-      return TunerState._(
-        none(),
-      );
-    }
-    return TunerState._(some(pitch));
-  }
-
-  factory TunerState.initial() => TunerState._(none());
+@freezed
+abstract class TunerState with _$TunerState {
+  const factory TunerState.initialPitch(Pitch pitch) = InitialPitch;
+  const factory TunerState.pitchDetected(Pitch pitch) = PitchDetected;
+  const factory TunerState.noPitchDetected() = NoPitchDetected;
+  const factory TunerState.error(String error) = Error;
 }
 
 @freezed
 abstract class TunerEvent with _$TunerEvent {
-  const factory TunerEvent.startup(DetectionAlgorithm algorithm) = _Startup;
+  const factory TunerEvent.startup() = _Startup;
   const factory TunerEvent.bufferReady(Uint8List buffer) = _BufferReady;
+  const factory TunerEvent.changeAlgorithm(String algorithm) = _ChangeAlgorithm;
 }
 
 class TunerBloc extends Bloc<TunerEvent, TunerState> {
-  TunerBloc() : super(TunerState.initial()) {
-    on<TunerEvent>((event, emit) {
-      event.when(
+  TunerBloc()
+      : super(TunerState.initialPitch(Pitch(
+          noteName: 'A',
+          octave: 4,
+          centsOffset: 0.0,
+          inTune: true,
+          previousNoteName: 'G#',
+          nextNoteName: 'A#',
+        ))) {
+    on<TunerEvent>((event, emit) async {
+      await event.when(
           startup: _handleStartup,
-          bufferReady: (buffer) => _handleBufferReady(buffer, emit));
+          changeAlgorithm: (algorithm) async =>
+              await _handleChangeAlgorithm(algorithm, emit),
+          bufferReady: (buffer) async =>
+              await _handleBufferReady(buffer, emit));
     });
   }
   TunerRs? _tunerApi;
 
-  void _handleStartup(DetectionAlgorithm algorithm) async {
+  Future<void> _handleChangeAlgorithm(
+      String algorithm, Emitter<TunerState> emit) async {
+    await _tunerApi!.changeAlgorithm(algorithm: algorithm);
+  }
+
+  Future<void> _handleStartup() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    final prefs = await SharedPreferences.getInstance();
+    final algorithmIdx = prefs.getInt(kSharedPreferencesAlgorithmKey) ??
+        SettingsModel.defaultAlgorithm.index;
     _tunerApi = TunerRs(Platform.isAndroid
         ? DynamicLibrary.open('libtuner_rs.so')
         : DynamicLibrary.process());
-    await _tunerApi!.initTuner(algorithm: algorithm.toShortString());
+    await _tunerApi!.initTuner(
+        algorithm: DetectionAlgorithm.values[algorithmIdx].toShortString());
   }
 
-  void _handleBufferReady(Uint8List buffer, Emitter<TunerState> emit) async {
+  Future<void> _handleBufferReady(
+      Uint8List buffer, Emitter<TunerState> emit) async {
     try {
       final pitch = await _tunerApi!.detectPitchWithBuffer(byteBuffer: buffer);
-      emit()
-      _controller.add(pitch);
+
+      // I'm not sure why pitch sometimes has a centsOffset of NAN
+      if (pitch == null || pitch.centsOffset.isNaN) {
+        emit(const TunerState.noPitchDetected());
+      } else {
+        emit(TunerState.pitchDetected(pitch));
+      }
+      if (pitch != null) {
+        print(
+            'Pitch detected: ${pitch.noteName}${pitch.octave}, cents: ${pitch.centsOffset}, in tune: ${pitch.inTune}, previous: ${pitch.previousNoteName}, next: ${pitch.nextNoteName}');
+      }
     } catch (e) {
-      _controller.addError(e);
+      print(e.toString());
+      //   emit(TunerState.error(e.toString()));
     }
-    emit(TunerState(pitch: pitch.pitch, confidence: pitch.confidence));
   }
 }

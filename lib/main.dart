@@ -1,28 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sound_test/blocs/tuner_bloc.dart';
 import 'package:sound_test/widgets/main_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:sound_test/models/settings_model.dart';
-import 'package:sound_test/widgets/tuner_inhereted_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sound_test/api.dart';
-import 'dart:ffi';
-import 'dart:io';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
   final algorithmIdx = prefs.getInt(kSharedPreferencesAlgorithmKey) ??
       SettingsModel.defaultAlgorithm.index;
-  final TunerRs tunerApi = TunerRs(Platform.isAndroid
-      ? DynamicLibrary.open('libtuner_rs.so')
-      : DynamicLibrary.process());
-  await tunerApi.initTuner(
-      algorithm: DetectionAlgorithm.values[algorithmIdx].toShortString());
-  runApp(MultiProvider(providers: [
-    ChangeNotifierProvider(
-      create: (_) => SettingsModel(algorithmIdx),
-    ),
-  ], child: TunerInherited(tunerApi, child: const MyApp())));
+  runApp(MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => SettingsModel(algorithmIdx),
+        ),
+      ],
+      child: BlocProvider(
+        create: (context) => TunerBloc()..add(const TunerEvent.startup()),
+        child: MyApp(),
+      )));
 }
 
 class MyApp extends StatelessWidget {
