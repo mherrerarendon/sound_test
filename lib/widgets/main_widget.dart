@@ -1,9 +1,7 @@
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sound_test/blocs/tuner_bloc.dart';
 import 'package:sound_test/models/settings_model.dart';
-import 'package:sound_test/widgets/algorithm_button.dart';
 import 'package:sound_test/widgets/algorithm_details.dart';
 import 'package:sound_test/widgets/listen_widget.dart';
 import 'package:sound_test/widgets/main_area.dart';
