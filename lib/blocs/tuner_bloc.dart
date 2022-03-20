@@ -79,7 +79,7 @@ class TunerBloc extends Bloc<TunerEvent, TunerState> {
       final pitch = await _tunerApi!.detectPitchWithBuffer(byteBuffer: buffer);
 
       // I'm not sure why pitch sometimes has a centsOffset of NAN
-      if (pitch == null || pitch.centsOffset.isNaN) {
+      if (pitch == null) {
         emit(const TunerState.noPitchDetected());
       } else {
         emit(TunerState.pitchDetected(pitch));
