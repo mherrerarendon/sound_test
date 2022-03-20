@@ -15,6 +15,8 @@ abstract class TunerState with _$TunerState {
   const factory TunerState.initialPitch(NoteResult noteResult) = InitialPitch;
   const factory TunerState.pitchDetected(NoteResult noteResult) = PitchDetected;
   const factory TunerState.noPitchDetected() = NoPitchDetected;
+  const factory TunerState.algorithmChanged(DetectionAlgorithm algorithm) =
+      AlgorithmChanged;
   const factory TunerState.error(String error) = Error;
 }
 
@@ -22,7 +24,8 @@ abstract class TunerState with _$TunerState {
 abstract class TunerEvent with _$TunerEvent {
   const factory TunerEvent.startup() = _Startup;
   const factory TunerEvent.bufferReady(Uint8List buffer) = _BufferReady;
-  const factory TunerEvent.changeAlgorithm(String algorithm) = _ChangeAlgorithm;
+  const factory TunerEvent.changeAlgorithm(DetectionAlgorithm algorithm) =
+      _ChangeAlgorithm;
 }
 
 class TunerBloc extends Bloc<TunerEvent, TunerState> {
@@ -37,7 +40,7 @@ class TunerBloc extends Bloc<TunerEvent, TunerState> {
         ))) {
     on<TunerEvent>((event, emit) async {
       await event.when(
-          startup: _handleStartup,
+          startup: () async => await _handleStartup(emit),
           changeAlgorithm: (algorithm) async =>
               await _handleChangeAlgorithm(algorithm, emit),
           bufferReady: (buffer) async =>
@@ -47,11 +50,12 @@ class TunerBloc extends Bloc<TunerEvent, TunerState> {
   TunerRs? _tunerApi;
 
   Future<void> _handleChangeAlgorithm(
-      String algorithm, Emitter<TunerState> emit) async {
-    await _tunerApi!.changeAlgorithm(algorithm: algorithm);
+      DetectionAlgorithm algorithm, Emitter<TunerState> emit) async {
+    await _tunerApi!.changeAlgorithm(algorithm: algorithm.toShortString());
+    emit(TunerState.algorithmChanged(algorithm));
   }
 
-  Future<void> _handleStartup() async {
+  Future<void> _handleStartup(Emitter<TunerState> emit) async {
     WidgetsFlutterBinding.ensureInitialized();
     final prefs = await SharedPreferences.getInstance();
     final algorithmIdx = prefs.getInt(kSharedPreferencesAlgorithmKey) ??
@@ -60,11 +64,13 @@ class TunerBloc extends Bloc<TunerEvent, TunerState> {
         ? DynamicLibrary.open('libtuner_rs.so')
         : DynamicLibrary.process());
 
+    final algorithm = DetectionAlgorithm.values[algorithmIdx];
     // TODO: Use the real sample rate and num samples
     await _tunerApi!.initTuner(
-        algorithm: DetectionAlgorithm.values[algorithmIdx].toShortString(),
+        algorithm: algorithm.toShortString(),
         sampleRate: 44000,
         numSamples: 17600);
+    emit(TunerState.algorithmChanged(algorithm));
   }
 
   Future<void> _handleBufferReady(

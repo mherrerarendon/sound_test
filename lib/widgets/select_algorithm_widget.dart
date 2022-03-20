@@ -15,9 +15,7 @@ class SelectAlgorithmPage extends StatelessWidget {
         value: algorithm,
         onChanged: (DetectionAlgorithm? val) async {
           settings.setDetectionAlgorithm(val!);
-          context
-              .read<TunerBloc>()
-              .add(TunerEvent.changeAlgorithm(algorithm.toShortString()));
+          context.read<TunerBloc>().add(TunerEvent.changeAlgorithm(algorithm));
           await Future.delayed(const Duration(milliseconds: 350));
           Navigator.pop(context);
         },

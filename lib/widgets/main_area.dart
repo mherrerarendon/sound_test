@@ -41,7 +41,7 @@ class MainArea extends StatelessWidget {
               },
               error: (errorString) =>
                   Text('Stack trace: ${errorString.toString()}'),
-              orElse: () => const Text('Should not get here'));
+              orElse: () => const Center(child: CircularProgressIndicator()));
         });
   }
 }

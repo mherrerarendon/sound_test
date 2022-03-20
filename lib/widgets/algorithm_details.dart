@@ -65,7 +65,7 @@ class _AlgorithmDetailsState extends State<AlgorithmDetails> {
               settings.setDetectionAlgorithm(algorithm);
               context
                   .read<TunerBloc>()
-                  .add(TunerEvent.changeAlgorithm(algorithm.toShortString()));
+                  .add(TunerEvent.changeAlgorithm(algorithm));
               Navigator.pop(context);
             },
             child: const Text('Select', style: TextStyle(fontSize: 30)),
