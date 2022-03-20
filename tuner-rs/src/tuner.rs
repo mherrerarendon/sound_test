@@ -1,4 +1,4 @@
-use crate::{api::PitchRs, constants::*, utils::audio_buffer_to_signal, TunerError};
+use crate::{constants::*, utils::audio_buffer_to_signal, TunerError};
 
 use anyhow::{bail, Result};
 use lazy_static::lazy_static;
@@ -64,9 +64,10 @@ impl Tuner {
     }
 
     pub fn detect_pitch_with_buffer(&mut self, byte_buffer: &[u8]) -> Option<NoteDetectionResult> {
-        let mut signal = audio_buffer_to_signal(byte_buffer);
+        let signal = audio_buffer_to_signal(byte_buffer);
+        self.fft_space.init_with_signal(signal);
         self.detector
-            .detect(&signal, self.sample_rate)
+            .detect_with_fft_space(self.sample_rate, &mut self.fft_space)
             .and_then(|f| NoteDetectionResult::try_from(f).ok())
     }
 
@@ -79,6 +80,8 @@ impl Tuner {
 mod tests {
     const TEST_SAMPLE_RATE: f64 = 44000.0;
     const TEST_NUM_SAMPLES: usize = 17600;
+
+    use crate::api::NoteResult;
 
     use super::*;
     use serde::Deserialize;
@@ -97,14 +100,14 @@ mod tests {
             TEST_NUM_SAMPLES,
             TEST_SAMPLE_RATE,
         );
-        let pitch: PitchRs = tuner
+        let pitch: NoteResult = tuner
             .detect_pitch_with_buffer(&buffer)
             .expect("failed to detect pitch")
             .into();
         assert_eq!(pitch.note_name, "A");
 
         tuner.set_algorithm(POWER_CEPSTRUM_ALGORITHM);
-        let pitch: PitchRs = tuner
+        let pitch: NoteResult = tuner
             .detect_pitch_with_buffer(&buffer)
             .expect("failed to detect pitch")
             .into();

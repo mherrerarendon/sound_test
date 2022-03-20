@@ -1,25 +1,9 @@
 use pitch_detector::note::NoteDetectionResult;
 
-use crate::constants::{A4_FREQ, MAX_CENTS_OFFSET, NOTES};
 use crate::tuner::{tuner_change_algorithm, tuner_detect_pitch_with_buffer, tuner_init};
 
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
-pub struct Partial {
-    pub freq: f64,
-    pub intensity: f64,
-}
-
-impl Default for Partial {
-    fn default() -> Self {
-        Self {
-            freq: 0.0,
-            intensity: 0.0,
-        }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, PartialOrd)]
-pub struct PitchRs {
+pub struct NoteResult {
     pub note_name: String,
     pub octave: i32,
     pub cents_offset: f64,
@@ -28,7 +12,7 @@ pub struct PitchRs {
     pub in_tune: bool,
 }
 
-impl From<NoteDetectionResult> for PitchRs {
+impl From<NoteDetectionResult> for NoteResult {
     fn from(note_result: NoteDetectionResult) -> Self {
         Self {
             note_name: note_result.note_name.to_string(),
@@ -50,6 +34,11 @@ pub fn init_tuner(algorithm: String, num_samples: u32, sample_rate: f64) -> anyh
     Ok(())
 }
 
-pub fn detect_pitch_with_buffer(byte_buffer: Vec<u8>) -> anyhow::Result<Option<PitchRs>> {
-    tuner_detect_pitch_with_buffer(&byte_buffer)
+pub fn detect_pitch_with_buffer(byte_buffer: Vec<u8>) -> anyhow::Result<Option<NoteResult>> {
+    let result = tuner_detect_pitch_with_buffer(&byte_buffer);
+    let mapped_result = match result {
+        Ok(note_result) => Ok(note_result.map(|n| NoteResult::from(n))),
+        Err(err) => Err(err),
+    };
+    mapped_result
 }
