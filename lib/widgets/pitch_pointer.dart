@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:sound_test/api.dart';
 
 class PitchPointer extends StatelessWidget {
-  const PitchPointer(this._pitch, {Key? key}) : super(key: key);
+  const PitchPointer(this._noteResult, {Key? key}) : super(key: key);
 
-  final Pitch _pitch;
+  final NoteResult _noteResult;
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +16,8 @@ class PitchPointer extends StatelessWidget {
           TweenAnimationBuilder<double>(
               tween: Tween<double>(
                   begin: 0,
-                  end: _pitch.centsOffset / 100 * constraints.maxWidth + midX),
+                  end: _noteResult.centsOffset / 100 * constraints.maxWidth +
+                      midX),
               duration: const Duration(milliseconds: 200),
               builder: (_, value, __) {
                 return Positioned(
@@ -26,7 +27,7 @@ class PitchPointer extends StatelessWidget {
                         children: [
                           const Icon(Icons.arrow_upward),
                           Text(
-                              '${_pitch.centsOffset > 0 ? '+' : ''}${_pitch.centsOffset.toStringAsFixed(2)}c')
+                              '${_noteResult.centsOffset > 0 ? '+' : ''}${_noteResult.centsOffset.toStringAsFixed(2)}c')
                         ],
                       )),
                       width: constraints.maxHeight,

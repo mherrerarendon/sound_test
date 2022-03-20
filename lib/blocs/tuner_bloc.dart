@@ -12,8 +12,8 @@ part 'tuner_bloc.freezed.dart';
 
 @freezed
 abstract class TunerState with _$TunerState {
-  const factory TunerState.initialPitch(Pitch pitch) = InitialPitch;
-  const factory TunerState.pitchDetected(Pitch pitch) = PitchDetected;
+  const factory TunerState.initialPitch(NoteResult noteResult) = InitialPitch;
+  const factory TunerState.pitchDetected(NoteResult noteResult) = PitchDetected;
   const factory TunerState.noPitchDetected() = NoPitchDetected;
   const factory TunerState.error(String error) = Error;
 }
@@ -27,7 +27,7 @@ abstract class TunerEvent with _$TunerEvent {
 
 class TunerBloc extends Bloc<TunerEvent, TunerState> {
   TunerBloc()
-      : super(TunerState.initialPitch(Pitch(
+      : super(TunerState.initialPitch(NoteResult(
           noteName: 'A',
           octave: 4,
           centsOffset: 0.0,
@@ -59,8 +59,12 @@ class TunerBloc extends Bloc<TunerEvent, TunerState> {
     _tunerApi = TunerRs(Platform.isAndroid
         ? DynamicLibrary.open('libtuner_rs.so')
         : DynamicLibrary.process());
+
+    // TODO: Use the real sample rate and num samples
     await _tunerApi!.initTuner(
-        algorithm: DetectionAlgorithm.values[algorithmIdx].toShortString());
+        algorithm: DetectionAlgorithm.values[algorithmIdx].toShortString(),
+        sampleRate: 44000,
+        numSamples: 17600);
   }
 
   Future<void> _handleBufferReady(
