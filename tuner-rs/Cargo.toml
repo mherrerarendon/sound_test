@@ -16,6 +16,8 @@ fitting = "0.3.0"
 thiserror = "1.0.30"
 float-cmp = "0.9.0"
 smoothed_z_score = { git = "https://github.com/mherrerarendon/smoothed_z_score.git" }
+#pitch-detector = { git = "https://github.com/mherrerarendon/pitch-detector.git" }
+pitch-detector = { path = "../../../rust/pitch-detector" }
 apodize = "1.0.0"
 itertools = "0.10.3"
 
