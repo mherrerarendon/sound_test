@@ -24,16 +24,13 @@ pub fn tuner_change_algorithm(algorithm: &str) -> Result<()> {
     Ok(())
 }
 
-pub fn tuner_detect_pitch_with_buffer(byte_buffer: &[u8]) -> Result<Option<NoteDetectionResult>> {
-    if byte_buffer.len() % 2 != 0 {
-        bail!("Audio buffer size must be a multiple of 2");
-    }
+pub fn tuner_detect_pitch_with_buffer(buffer: &[f64]) -> Result<Option<NoteDetectionResult>> {
     Ok(TUNER
         .lock()
         .unwrap()
         .as_mut()
         .ok_or(TunerError::TunerNotInitialized)?
-        .detect_pitch_with_buffer(byte_buffer))
+        .detect_pitch_with_buffer(buffer))
 }
 
 pub struct Tuner {
@@ -63,8 +60,8 @@ impl Tuner {
         }
     }
 
-    pub fn detect_pitch_with_buffer(&mut self, byte_buffer: &[u8]) -> Option<NoteDetectionResult> {
-        let signal = audio_buffer_to_signal(byte_buffer);
+    pub fn detect_pitch_with_buffer(&mut self, signal: &[f64]) -> Option<NoteDetectionResult> {
+        // let signal = audio_buffer_to_signal(byte_buffer);
         self.fft_space.init_with_signal(signal);
         self.detector
             .detect_with_fft_space(self.sample_rate, &mut self.fft_space)
@@ -95,20 +92,21 @@ mod tests {
         let mut sample_data: SampleData =
             serde_json::from_str(include_str!("../test_data/cello_open_a.json"))?;
         let buffer = sample_data.data.take().unwrap();
+        let signal = audio_buffer_to_signal(&buffer);
         let mut tuner = Tuner::new(
             AUTOCORRELATION_ALGORITHM,
             TEST_NUM_SAMPLES,
             TEST_SAMPLE_RATE,
         );
         let pitch: NoteResult = tuner
-            .detect_pitch_with_buffer(&buffer)
+            .detect_pitch_with_buffer(&signal)
             .expect("failed to detect pitch")
             .into();
         assert_eq!(pitch.note_name, "A");
 
         tuner.set_algorithm(POWER_CEPSTRUM_ALGORITHM);
         let pitch: NoteResult = tuner
-            .detect_pitch_with_buffer(&buffer)
+            .detect_pitch_with_buffer(&signal)
             .expect("failed to detect pitch")
             .into();
         assert_eq!(pitch.note_name, "A");
