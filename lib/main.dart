@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sound_test/blocs/audio_capture_bloc.dart';
 import 'package:sound_test/blocs/tuner_bloc.dart';
 import 'package:sound_test/widgets/main_widget.dart';
 import 'package:provider/provider.dart';
@@ -18,8 +19,9 @@ void main() async {
         ),
       ],
       child: BlocProvider(
-        create: (context) => TunerBloc()..add(const TunerEvent.startup()),
-        child: MyApp(),
+        create: (context) => TunerBloc()
+          ..add(const TunerEvent.startup(kSampleRate, kBufferSize)),
+        child: const MyApp(),
       )));
 }
 

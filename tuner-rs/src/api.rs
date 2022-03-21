@@ -34,8 +34,8 @@ pub fn init_tuner(algorithm: String, num_samples: u32, sample_rate: f64) -> anyh
     Ok(())
 }
 
-pub fn detect_pitch_with_buffer(byte_buffer: Vec<u8>) -> anyhow::Result<Option<NoteResult>> {
-    let result = tuner_detect_pitch_with_buffer(&byte_buffer);
+pub fn detect_pitch_with_buffer(buffer: Vec<f64>) -> anyhow::Result<Option<NoteResult>> {
+    let result = tuner_detect_pitch_with_buffer(&buffer);
     let mapped_result = match result {
         Ok(note_result) => Ok(note_result.map(|n| NoteResult::from(n))),
         Err(err) => Err(err),

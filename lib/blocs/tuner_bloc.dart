@@ -22,8 +22,8 @@ abstract class TunerState with _$TunerState {
 
 @freezed
 abstract class TunerEvent with _$TunerEvent {
-  const factory TunerEvent.startup() = _Startup;
-  const factory TunerEvent.bufferReady(Uint8List buffer) = _BufferReady;
+  const factory TunerEvent.startup(int sampleRate, int bufferSize) = _Startup;
+  const factory TunerEvent.bufferReady(Float64List buffer) = _BufferReady;
   const factory TunerEvent.changeAlgorithm(DetectionAlgorithm algorithm) =
       _ChangeAlgorithm;
 }
@@ -40,7 +40,8 @@ class TunerBloc extends Bloc<TunerEvent, TunerState> {
         ))) {
     on<TunerEvent>((event, emit) async {
       await event.when(
-          startup: () async => await _handleStartup(emit),
+          startup: (sampleRate, bufferSize) async =>
+              await _handleStartup(sampleRate, bufferSize, emit),
           changeAlgorithm: (algorithm) async =>
               await _handleChangeAlgorithm(algorithm, emit),
           bufferReady: (buffer) async =>
@@ -55,7 +56,8 @@ class TunerBloc extends Bloc<TunerEvent, TunerState> {
     emit(TunerState.algorithmChanged(algorithm));
   }
 
-  Future<void> _handleStartup(Emitter<TunerState> emit) async {
+  Future<void> _handleStartup(
+      int sampleRate, int bufferSize, Emitter<TunerState> emit) async {
     WidgetsFlutterBinding.ensureInitialized();
     final prefs = await SharedPreferences.getInstance();
     final algorithmIdx = prefs.getInt(kSharedPreferencesAlgorithmKey) ??
@@ -65,18 +67,17 @@ class TunerBloc extends Bloc<TunerEvent, TunerState> {
         : DynamicLibrary.process());
 
     final algorithm = DetectionAlgorithm.values[algorithmIdx];
-    // TODO: Use the real sample rate and num samples
     await _tunerApi!.initTuner(
         algorithm: algorithm.toShortString(),
-        sampleRate: 44000,
-        numSamples: 17600);
+        sampleRate: sampleRate.toDouble(),
+        numSamples: bufferSize);
     emit(TunerState.algorithmChanged(algorithm));
   }
 
   Future<void> _handleBufferReady(
-      Uint8List buffer, Emitter<TunerState> emit) async {
+      Float64List buffer, Emitter<TunerState> emit) async {
     try {
-      final pitch = await _tunerApi!.detectPitchWithBuffer(byteBuffer: buffer);
+      final pitch = await _tunerApi!.detectPitchWithBuffer(buffer: buffer);
 
       // I'm not sure why pitch sometimes has a centsOffset of NAN
       if (pitch == null) {
