@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_audio_capture/flutter_audio_capture.dart';
@@ -8,7 +9,8 @@ import 'package:wakelock/wakelock.dart';
 part 'audio_capture_bloc.freezed.dart';
 
 const int kSampleRate = 44100;
-const int kBufferSize = 22050;
+const int kIosBufferSize = 22050;
+const int kAndroidBufferSize = 7104;
 
 @freezed
 abstract class AudioCaptureEvent with _$AudioCaptureEvent {
@@ -42,7 +44,9 @@ class AudioCaptureBloc extends Bloc<AudioCaptureEvent, AudioCaptureState> {
       await _audioCapture.start((dynamic obj) {
         var buffer = Float64List.fromList(obj.cast<double>());
         add(AudioCaptureEvent.newData(buffer));
-      }, onError, sampleRate: kSampleRate, bufferSize: kBufferSize);
+      }, onError,
+          sampleRate: kSampleRate,
+          bufferSize: Platform.isAndroid ? kAndroidBufferSize : kIosBufferSize);
       emit(const AudioCaptureState.listening());
     }
     Wakelock.enable();

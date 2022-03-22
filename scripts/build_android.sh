@@ -1,7 +1,7 @@
 #!/bin/sh
 JNI_LIBS=android/app/src/main/jniLibs
 
-echo "Remember to set `crate-type = [\"cdylib\"]` in Cargo.toml"
+echo "Remember to set 'crate-type = [\"cdylib\"]' in Cargo.toml"
 
 echo "Cleaning previous build..."
 rm -rf $JNI_LIBS
