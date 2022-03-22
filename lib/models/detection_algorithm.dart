@@ -1,6 +1,3 @@
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
 const String kSharedPreferencesAlgorithmKey = 'algorithm';
 enum DetectionAlgorithm { cepstrum, autocorrelation, rawfft }
 
@@ -62,21 +59,5 @@ extension ParseToString on DetectionAlgorithm {
       default:
         return '🦗';
     }
-  }
-}
-
-class SettingsModel extends ChangeNotifier {
-  SettingsModel(initialAlgorithm) {
-    _detectionAlgorithm = DetectionAlgorithm.values[initialAlgorithm];
-  }
-  late DetectionAlgorithm _detectionAlgorithm;
-
-  DetectionAlgorithm get detectionAlgorithm => _detectionAlgorithm;
-  static DetectionAlgorithm get defaultAlgorithm => DetectionAlgorithm.cepstrum;
-  void setDetectionAlgorithm(DetectionAlgorithm value) {
-    SharedPreferences.getInstance().then(
-        (prefs) => prefs.setInt(kSharedPreferencesAlgorithmKey, value.index));
-    _detectionAlgorithm = value;
-    notifyListeners();
   }
 }

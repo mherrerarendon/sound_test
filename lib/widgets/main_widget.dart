@@ -1,10 +1,8 @@
-import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
-import 'package:sound_test/models/settings_model.dart';
-import 'package:sound_test/widgets/algorithm_details.dart';
 import 'package:sound_test/widgets/algorithm_popup.dart';
 import 'package:sound_test/widgets/listen_widget.dart';
 import 'package:sound_test/widgets/main_area.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class MainWidget extends StatefulWidget {
   const MainWidget({Key? key}) : super(key: key);
@@ -23,15 +21,10 @@ class _MainWidgetState extends State<MainWidget> {
         actions: [
           AlgorithmPopup(),
           IconButton(
-              onPressed: () {
-                final settings =
-                    Provider.of<SettingsModel>(context, listen: false);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          AlgorithmDetails(settings.detectionAlgorithm.index)),
-                );
+              onPressed: () async {
+                const url =
+                    'https://github.com/mherrerarendon/sound_test/blob/main/README.md';
+                if (!await launch(url)) throw 'Could not launch $url';
               },
               icon: const Icon(Icons.help)),
         ],

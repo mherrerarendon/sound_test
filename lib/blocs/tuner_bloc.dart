@@ -6,9 +6,11 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sound_test/api.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sound_test/models/settings_model.dart';
+import 'package:sound_test/models/detection_algorithm.dart';
 
 part 'tuner_bloc.freezed.dart';
+
+const DetectionAlgorithm kDefaultAlgorithm = DetectionAlgorithm.rawfft;
 
 @freezed
 abstract class TunerState with _$TunerState {
@@ -53,6 +55,8 @@ class TunerBloc extends Bloc<TunerEvent, TunerState> {
   Future<void> _handleChangeAlgorithm(
       DetectionAlgorithm algorithm, Emitter<TunerState> emit) async {
     await _tunerApi!.changeAlgorithm(algorithm: algorithm.toShortString());
+    SharedPreferences.getInstance().then((prefs) =>
+        prefs.setInt(kSharedPreferencesAlgorithmKey, algorithm.index));
     emit(TunerState.algorithmChanged(algorithm));
   }
 
@@ -60,8 +64,8 @@ class TunerBloc extends Bloc<TunerEvent, TunerState> {
       int sampleRate, int bufferSize, Emitter<TunerState> emit) async {
     WidgetsFlutterBinding.ensureInitialized();
     final prefs = await SharedPreferences.getInstance();
-    final algorithmIdx = prefs.getInt(kSharedPreferencesAlgorithmKey) ??
-        SettingsModel.defaultAlgorithm.index;
+    final algorithmIdx =
+        prefs.getInt(kSharedPreferencesAlgorithmKey) ?? kDefaultAlgorithm.index;
     _tunerApi = TunerRs(Platform.isAndroid
         ? DynamicLibrary.open('libtuner_rs.so')
         : DynamicLibrary.process());
@@ -79,7 +83,6 @@ class TunerBloc extends Bloc<TunerEvent, TunerState> {
     try {
       final pitch = await _tunerApi!.detectPitchWithBuffer(buffer: buffer);
 
-      // I'm not sure why pitch sometimes has a centsOffset of NAN
       if (pitch == null) {
         emit(const TunerState.noPitchDetected());
       } else {

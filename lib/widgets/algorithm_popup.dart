@@ -2,7 +2,7 @@ import 'package:custom_pop_up_menu/custom_pop_up_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sound_test/blocs/tuner_bloc.dart';
-import 'package:sound_test/models/settings_model.dart';
+import 'package:sound_test/models/detection_algorithm.dart';
 
 class AlgorithmPopup extends StatelessWidget {
   AlgorithmPopup({Key? key}) : super(key: key);
@@ -38,9 +38,9 @@ class AlgorithmPopup extends StatelessWidget {
                         algorithmChanged: (algorithm) => algorithm.toName(),
                         orElse: () => ''),
                     style: const TextStyle(
-                        fontSize: 24,
+                        fontSize: 20,
                         color: Colors.white,
-                        fontWeight: FontWeight.bold),
+                        fontWeight: FontWeight.normal),
                   ),
                 ),
               ),

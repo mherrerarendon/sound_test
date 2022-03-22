@@ -26,6 +26,10 @@
 	<true/>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Sound Test needs access to the microphone in your device to capture audio data in order to detect a pitch.</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>https</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

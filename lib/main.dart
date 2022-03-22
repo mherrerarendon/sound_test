@@ -5,27 +5,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sound_test/blocs/audio_capture_bloc.dart';
 import 'package:sound_test/blocs/tuner_bloc.dart';
 import 'package:sound_test/widgets/main_widget.dart';
-import 'package:provider/provider.dart';
-import 'package:sound_test/models/settings_model.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  final prefs = await SharedPreferences.getInstance();
-  final algorithmIdx = prefs.getInt(kSharedPreferencesAlgorithmKey) ??
-      SettingsModel.defaultAlgorithm.index;
-  runApp(MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-          create: (_) => SettingsModel(algorithmIdx),
-        ),
-      ],
-      child: BlocProvider(
-        create: (context) => TunerBloc()
-          ..add(TunerEvent.startup(kSampleRate,
-              Platform.isAndroid ? kAndroidBufferSize : kIosBufferSize)),
-        child: const MyApp(),
-      )));
+  runApp(BlocProvider(
+    create: (context) => TunerBloc()
+      ..add(TunerEvent.startup(kSampleRate,
+          Platform.isAndroid ? kAndroidBufferSize : kIosBufferSize)),
+    child: const MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
