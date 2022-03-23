@@ -17,6 +17,7 @@ abstract class TunerState with _$TunerState {
   const factory TunerState.initialPitch(NoteResult noteResult) = InitialPitch;
   const factory TunerState.pitchDetected(NoteResult noteResult) = PitchDetected;
   const factory TunerState.noPitchDetected() = NoPitchDetected;
+  const factory TunerState.zeroCrossingRate(double rate) = ZeroCrossingRate;
   const factory TunerState.algorithmChanged(DetectionAlgorithm algorithm) =
       AlgorithmChanged;
   const factory TunerState.error(String error) = Error;
@@ -51,6 +52,8 @@ class TunerBloc extends Bloc<TunerEvent, TunerState> {
     });
   }
   TunerRs? _tunerApi;
+  int _missedDetectionCount = 0;
+  final _maxMissedDetectionCount = 5;
 
   Future<void> _handleChangeAlgorithm(
       DetectionAlgorithm algorithm, Emitter<TunerState> emit) async {
@@ -84,9 +87,15 @@ class TunerBloc extends Bloc<TunerEvent, TunerState> {
       final pitch = await _tunerApi!.detectPitchWithBuffer(buffer: buffer);
 
       if (pitch == null) {
-        emit(const TunerState.noPitchDetected());
+        if (_missedDetectionCount < _maxMissedDetectionCount) {
+          _missedDetectionCount++;
+        } else {
+          emit(const TunerState.noPitchDetected());
+          _missedDetectionCount = 0;
+        }
       } else {
         emit(TunerState.pitchDetected(pitch));
+        _missedDetectionCount = 0;
       }
     } catch (e) {
       emit(TunerState.error(e.toString()));

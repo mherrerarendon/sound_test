@@ -15,33 +15,20 @@ class AlgorithmPopup extends StatelessWidget {
       buildWhen: (_, current) => current is AlgorithmChanged,
       builder: (context, state) {
         return CustomPopupMenu(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(5.0),
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 6.0),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(5),
-                color: Theme.of(context).colorScheme.secondary,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    offset: const Offset(0.0, 1.0), //(x,y)
-                    blurRadius: 6.0,
-                  ),
-                ],
-              ),
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    state.maybeWhen(
-                        algorithmChanged: (algorithm) => algorithm.toName(),
-                        orElse: () => ''),
-                    style: const TextStyle(
-                        fontSize: 20,
-                        color: Colors.white,
-                        fontWeight: FontWeight.normal),
-                  ),
+          child: Card(
+            color: Theme.of(context).colorScheme.secondaryContainer,
+            elevation: 18.0,
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  state.maybeWhen(
+                      algorithmChanged: (algorithm) => algorithm.toName(),
+                      orElse: () => ''),
+                  style: const TextStyle(
+                      fontSize: 20,
+                      color: Colors.white,
+                      fontWeight: FontWeight.normal),
                 ),
               ),
             ),
