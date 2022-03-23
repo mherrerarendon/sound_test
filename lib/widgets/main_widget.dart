@@ -23,7 +23,7 @@ class _MainWidgetState extends State<MainWidget> {
           IconButton(
               onPressed: () async {
                 const url =
-                    'https://github.com/mherrerarendon/sound_test/blob/main/README.md';
+                    'https://github.com/mherrerarendon/sound_test#detection-algorithms';
                 if (!await launch(url)) throw 'Could not launch $url';
               },
               icon: const Icon(Icons.help)),
