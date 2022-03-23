@@ -1,6 +1,7 @@
 use pitch_detector::note::NoteDetectionResult;
 
 use crate::tuner::{tuner_change_algorithm, tuner_detect_pitch_with_buffer, tuner_init};
+use pitch_detector::pitch::core::zero_crossing_rate;
 
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct NoteResult {
@@ -41,4 +42,9 @@ pub fn detect_pitch_with_buffer(buffer: Vec<f64>) -> anyhow::Result<Option<NoteR
         Err(err) => Err(err),
     };
     mapped_result
+}
+
+pub fn zero_cross_rate(buffer: Vec<f64>, sample_rate: u32) -> anyhow::Result<f64> {
+    let rate = zero_crossing_rate(buffer, sample_rate as f64);
+    Ok(rate)
 }

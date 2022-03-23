@@ -14,9 +14,13 @@ class MainArea extends StatelessWidget {
         listener: (context, state) {
           if (state is NoPitchDetected) {
             const snackBar = SnackBar(
-              content: Text('No pitch detected'),
+              content: Text(
+                  'No pitch detected. Try using a different detection algorithm.'),
             );
+            ScaffoldMessenger.of(context).removeCurrentSnackBar();
             ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          } else if (state is PitchDetected) {
+            ScaffoldMessenger.of(context).removeCurrentSnackBar();
           }
         },
         buildWhen: (_, current) => current is PitchDetected,
