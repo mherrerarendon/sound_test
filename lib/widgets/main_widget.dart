@@ -17,7 +17,7 @@ class _MainWidgetState extends State<MainWidget> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
       appBar: AppBar(
-        title: const Text('Sound Test'),
+        title: const Text('SondChek'),
         actions: [
           AlgorithmPopup(),
           IconButton(

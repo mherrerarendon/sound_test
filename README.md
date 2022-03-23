@@ -1,4 +1,4 @@
-# Sound Test
+# SondChek
 
 A Flutter+Rust tuner app (WIP).
 Currently only supports iOS and Android
