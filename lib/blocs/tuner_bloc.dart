@@ -69,7 +69,7 @@ class TunerBloc extends Bloc<TunerEvent, TunerState> {
     final prefs = await SharedPreferences.getInstance();
     final algorithmIdx =
         prefs.getInt(kSharedPreferencesAlgorithmKey) ?? kDefaultAlgorithm.index;
-    _tunerApi = TunerRs(Platform.isAndroid
+    _tunerApi = TunerRsImpl(Platform.isAndroid
         ? DynamicLibrary.open('libtuner_rs.so')
         : DynamicLibrary.process());
 
@@ -79,6 +79,13 @@ class TunerBloc extends Bloc<TunerEvent, TunerState> {
         sampleRate: sampleRate.toDouble(),
         numSamples: bufferSize);
     emit(TunerState.algorithmChanged(algorithm));
+    emit(TunerState.pitchDetected(NoteResult(
+        noteName: 'A',
+        octave: 4,
+        centsOffset: 0.0,
+        previousNoteName: 'G#',
+        nextNoteName: 'A#',
+        inTune: true)));
   }
 
   Future<void> _handleBufferReady(

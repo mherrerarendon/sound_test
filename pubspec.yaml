@@ -34,7 +34,7 @@ dependencies:
   flutter_bloc: ^8.0.1
   flutter_rust_bridge: ^1.10.0
   freezed_annotation: ^1.1.0
-  permission_handler: ^9.2.0
+  # permission_handler: ^9.2.0
   shared_preferences: ^2.0.12
   wakelock: ^0.6.1
   custom_pop_up_menu: ^1.2.3+1

@@ -13,6 +13,9 @@ def bridge_codegen():
     c_output = os.path.join(root_dir, 'ios', 'Runner', 'api.h')
     cmd = ['flutter_rust_bridge_codegen', '--rust-input', rust_input,
            '--dart-output', dart_output, '--c-output', c_output]
+    if True:  # arm64
+        cmd.extend(['--llvm-path', '/usr/local/homebrew/opt/llvm'])
+    print('Running {}'.format(' '.join(cmd)))
     result = subprocess.run(cmd)
     return result.returncode
 
